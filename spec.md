@@ -30,6 +30,7 @@
 - Disable placement on the roadway/deck except at the fixed 10 ft deck joints
 - Members may attach to existing deck joints, supports, and any snapped existing joint. Pressing Escape during member placement detaches the partially placed member from the chained last joint and requires a new first joint.
 - The bridge deck includes exactly six modeled members and seven deck joints. The determination calculation counts these members and joints.
+- Deck members and deck joints are permanent: they cannot be deleted, dragged, or cleared. Structural members may connect to any deck joint.
 - The interface states how many additional members are needed for determinacy or how many redundant members are present. Redundant structural members are visually highlighted with a pink dashed style.
 - When a member endpoint is clicked within 2 ft of an existing joint, the new endpoint snaps exactly onto that joint and duplicate joints are automatically combined.
 

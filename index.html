@@ -428,9 +428,6 @@
               <polygon points="1200,290 1100,290 950,408 1200,408" fill="#c9b99f" stroke="#17212b" stroke-width="3"/>
             </g>
 
-            <rect x="100" y="290" width="1000" height="12" rx="4" fill="#9a7b57"/>
-            <rect x="100" y="302" width="1000" height="6" fill="#bd9d76"/>
-
             <g id="memberLines" stroke="#8a5a36" stroke-width="10" stroke-linecap="round" data-members>
               <line data-deck-member="true" x1="100" y1="290" x2="266" y2="290"/>
               <line data-deck-member="true" x1="266" y1="290" x2="433" y2="290"/>
@@ -459,13 +456,13 @@
             </g>
 
             <g id="jointCircles" fill="#fff" stroke="#17212b" stroke-width="3" aria-label="Bridge joints">
-              <circle data-fixed="pin" cx="100" cy="290" r="9"/>
+              <circle data-fixed="pin" data-deck="true" cx="100" cy="290" r="9"/>
               <circle data-deck="true" cx="266" cy="290" r="7"/>
               <circle data-deck="true" cx="433" cy="290" r="7"/>
               <circle data-deck="true" cx="600" cy="290" r="7"/>
               <circle data-deck="true" cx="767" cy="290" r="7"/>
               <circle data-deck="true" cx="934" cy="290" r="7"/>
-              <circle data-fixed="roller" cx="1100" cy="290" r="9"/>
+              <circle data-fixed="roller" data-deck="true" cx="1100" cy="290" r="9"/>
               <circle data-member-joint="true" cx="350" cy="180" r="8"/>
               <circle data-member-joint="true" cx="600" cy="120" r="8"/>
               <circle data-member-joint="true" cx="850" cy="180" r="8"/>
@@ -481,19 +478,6 @@
               <text x="1100" y="350">60 ft</text>
             </g>
 
-            <g id="previewVehicle" aria-label="Side view car">
-              <path d="M684 276 L706 276 L725 252 L773 252 L794 276 L808 276 L818 288 L818 292 L678 292 L678 284 Z"
-                    fill="#d9b72c" stroke="#17212b" stroke-width="3" stroke-linejoin="round"/>
-              <path d="M724 256 L709 276 L746 276 L746 256 Z" fill="#a9cad4" stroke="#17212b" stroke-width="2"/>
-              <path d="M750 256 L750 276 L789 276 L770 256 Z" fill="#a9cad4" stroke="#17212b" stroke-width="2"/>
-              <rect x="680" y="282" width="136" height="12" rx="5" fill="#d9b72c" stroke="#17212b" stroke-width="3"/>
-              <circle cx="716" cy="292" r="13" fill="#17212b"/>
-              <circle cx="716" cy="292" r="6" fill="#eef2f4"/>
-              <circle cx="780" cy="292" r="13" fill="#17212b"/>
-              <circle cx="780" cy="292" r="6" fill="#eef2f4"/>
-              <rect x="808" y="282" width="10" height="7" rx="3" fill="#e66f4a" stroke="#17212b" stroke-width="1"/>
-              <rect x="680" y="282" width="7" height="7" rx="2" fill="#fff4b0" stroke="#17212b" stroke-width="1"/>
-            </g>
           </svg>
         </div>
 
@@ -1015,11 +999,6 @@
         return;
       }
       const point = rawGridPoint(event.clientX, event.clientY);
-      if (point.footY === 0 && point.footX !== 0 && point.footX !== 60
-        && point.footX % 10 !== 0) {
-        return;
-      }
-
       draggedCircle.setAttribute("cx", point.svgX);
       draggedCircle.setAttribute("cy", point.svgY);
       [...memberLines.querySelectorAll("line")].forEach((line) => {
@@ -1184,9 +1163,6 @@
         suppressSvgClick = false;
         return;
       }
-      if (event.target.closest("#previewVehicle")) {
-        return;
-      }
 
       if (activeTool === "erase-member") {
         const line = event.target.closest("line");
@@ -1229,15 +1205,6 @@
       const point = snapToFootGrid(event.clientX, event.clientY);
       if (!point) {
         hint.textContent = "Joint placement is limited to the 60 ft by 25 ft grid.";
-        return;
-      }
-
-      if (point.footY === 0
-        && !point.snappedToJoint
-        && point.footX !== 0
-        && point.footX !== 60
-        && point.footX % 10 !== 0) {
-        hint.textContent = "Deck joints may only be placed at 10 ft intervals.";
         return;
       }
 
