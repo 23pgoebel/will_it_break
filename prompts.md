@@ -123,3 +123,7 @@
 - **Request:** Fix the cost after clearing by including bridge-deck joints and members.
 - **Changes:** Updated the live cost formula to charge all joints at $500 each and all member feet at $100 per foot, including deck elements.
 - **Worked:** Yes. The formula includes seven deck joints and 60 ft of deck members, producing $9,500 for a cleared bridge. Browser page verification also showed the opening bridge cost as $29,493.
+
+- **Request:** Keep members brown until stress exceeds half of allowable tension or compression capacity.
+- **Changes:** Updated structural and deck member coloring so 45,000 lb tension or 37,500 lb compression is the first color-transition threshold.
+- **Worked:** Yes. Browser verification showed all members brown at the 44 ft semi position because no absolute force exceeded 50 percent of the applicable capacity.

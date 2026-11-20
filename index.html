@@ -988,14 +988,11 @@
           } else if (force > 0) {
             if (ratio >= 0.8) line.setAttribute("stroke", "#2468d7");
             else if (ratio >= 0.5) line.setAttribute("stroke", "#1f82c9");
-            else if (ratio >= 0.333333) line.setAttribute("stroke", "#36a36f");
-            else if (ratio > 0) line.setAttribute("stroke", "#69bd67");
             else line.setAttribute("stroke", "#8a5a36");
           } else if (force < 0) {
             if (ratio >= 0.8) line.setAttribute("stroke", "#d7261e");
             else if (ratio >= 0.5) line.setAttribute("stroke", "#ed5a24");
-            else if (ratio >= 0.333333) line.setAttribute("stroke", "#f0a91f");
-            else line.setAttribute("stroke", "#f5d23a");
+            else line.setAttribute("stroke", "#8a5a36");
           } else {
             line.setAttribute("stroke", "#8a5a36");
           }
@@ -1010,14 +1007,11 @@
         } else if (force > 0) {
           if (ratio >= 0.8) line.setAttribute("stroke", "#2468d7");
           else if (ratio >= 0.5) line.setAttribute("stroke", "#1f82c9");
-          else if (ratio >= 0.333333) line.setAttribute("stroke", "#36a36f");
-          else if (ratio > 0) line.setAttribute("stroke", "#69bd67");
           else line.setAttribute("stroke", "#8a5a36");
         } else if (force < 0) {
           if (ratio >= 0.8) line.setAttribute("stroke", "#d7261e");
           else if (ratio >= 0.5) line.setAttribute("stroke", "#ed5a24");
-          else if (ratio >= 0.333333) line.setAttribute("stroke", "#f0a91f");
-          else line.setAttribute("stroke", "#f5d23a");
+          else line.setAttribute("stroke", "#8a5a36");
         } else {
           line.setAttribute("stroke", "#8a5a36");
         }
