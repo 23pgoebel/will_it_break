@@ -248,6 +248,43 @@
       color: var(--blue);
     }
 
+    .details-content {
+      display: none;
+      width: 100%;
+      max-height: 240px;
+      overflow: auto;
+      border-top: 1px solid var(--line);
+      margin-top: 8px;
+    }
+
+    .details.open .details-content {
+      display: block;
+    }
+
+    .details.open {
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .details-table th,
+    .details-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 6px 8px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .details-table th:first-child,
+    .details-table td:first-child {
+      text-align: left;
+    }
+
     @media (max-width: 980px) {
       .workspace {
         grid-template-columns: 130px minmax(380px, 1fr);
@@ -446,7 +483,7 @@
         <div class="test-controls" aria-label="Test mode controls">
           <label class="control">
             Vehicle
-            <select>
+            <select id="vehicleSelect">
               <option>Semi</option>
               <option>Car</option>
               <option>Loaded Dump Truck</option>
@@ -455,10 +492,10 @@
           </label>
           <label class="control">
             Front axle position
-            <input type="number" value="44" aria-label="Front axle position in feet">
+            <input id="frontAxlePosition" type="number" value="44" min="0" max="60" step="0.5" aria-label="Front axle position in feet">
           </label>
           <div class="test-actions">
-            <button type="button">Park</button>
+            <button type="button" id="parkButton">Park / Solve</button>
             <button class="primary" type="button">Drive Across</button>
             <button type="button">Pause</button>
           </div>
@@ -486,9 +523,20 @@
       </aside>
     </section>
 
-    <section class="details" aria-label="Details panel">
+    <section class="details" id="detailsPanel" aria-label="Details panel">
       <span>Details panel</span>
-      <button class="details-toggle" type="button" aria-expanded="false">Open details</button>
+      <button class="details-toggle" id="detailsToggle" type="button" aria-expanded="false">Open details</button>
+      <div class="details-content" id="detailsContent">
+        <p id="solverMessage">Place a bridge and use Park to calculate member forces.</p>
+        <table class="details-table" id="reactionTable">
+          <thead><tr><th>Reaction</th><th>Force (lb)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <table class="details-table" id="memberTable">
+          <thead><tr><th>Member</th><th>Axial force (lb)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </section>
   </main>
   <script>
@@ -592,6 +640,244 @@
       document.querySelector("#stabilityStatus").textContent = stability;
       document.querySelector("#stabilityStatus").className =
         `stat-value ${stabilityClass}`.trim();
+    }
+
+    const VEHICLE_AXLES = {
+      "Car": [
+        { offset: 0, load: 2000 },
+        { offset: 10, load: 2000 }
+      ],
+      "Loaded Dump Truck": [
+        { offset: 0, load: 12000 },
+        { offset: 14, load: 17000 },
+        { offset: 18.5, load: 17000 }
+      ],
+      "Semi": [
+        { offset: 0, load: 8000 },
+        { offset: 14, load: 32000 },
+        { offset: 28, load: 32000 }
+      ],
+      "Fire Engine": [
+        { offset: 0, load: 20000 },
+        { offset: 17, load: 27000 },
+        { offset: 21.5, load: 27000 }
+      ]
+    };
+
+    function getFootPosition(circle) {
+      return {
+        x: (Number(circle.getAttribute("cx")) - originX) / feetPerSvgX,
+        y: (originY - Number(circle.getAttribute("cy"))) / svgPerFootY
+      };
+    }
+
+    function distributeAxleLoads(frontX, vehicleName) {
+      const axleData = VEHICLE_AXLES[vehicleName];
+      const jointLoads = new Map();
+      const deckJoints = [...jointCircles.querySelectorAll("circle")]
+        .map((circle) => ({ circle, position: getFootPosition(circle) }))
+        .filter((item) => item.position.y === 0)
+        .sort((a, b) => a.position.x - b.position.x);
+
+      axleData.forEach((axle) => {
+        const axlePosition = frontX + (typeof axle.offset === "number" ? axle.offset : 0);
+        const load = typeof axle.load === "number" ? axle.load : axle;
+        if (axlePosition < 0 || axlePosition > 60) {
+          return;
+        }
+
+        let left = deckJoints[0];
+        let right = deckJoints[deckJoints.length - 1];
+        for (let i = 0; i < deckJoints.length - 1; i += 1) {
+          if (axlePosition >= deckJoints[i].position.x
+            && axlePosition <= deckJoints[i + 1].position.x) {
+            left = deckJoints[i];
+            right = deckJoints[i + 1];
+            break;
+          }
+        }
+
+        if (Math.abs(axlePosition - left.position.x) < 0.0001) {
+          jointLoads.set(left.circle, (jointLoads.get(left.circle) || 0) + load);
+          return;
+        }
+        if (Math.abs(axlePosition - right.position.x) < 0.0001) {
+          jointLoads.set(right.circle, (jointLoads.get(right.circle) || 0) + load);
+          return;
+        }
+
+        const span = right.position.x - left.position.x;
+        const rightShare = span === 0 ? 0 : load * (axlePosition - left.position.x) / span;
+        jointLoads.set(right.circle, (jointLoads.get(right.circle) || 0) + rightShare);
+        jointLoads.set(left.circle, (jointLoads.get(left.circle) || 0) + (load - rightShare));
+      });
+
+      return jointLoads;
+    }
+
+    function gaussSolve(matrix, rhs) {
+      const size = rhs.length;
+      const augmented = matrix.map((row, index) => [...row, rhs[index]]);
+      const pivots = [];
+
+      for (let column = 0; column < size; column += 1) {
+        let pivotRow = column;
+        for (let row = column + 1; row < size; row += 1) {
+          if (Math.abs(augmented[row][column]) > Math.abs(augmented[pivotRow][column])) {
+            pivotRow = row;
+          }
+        }
+
+        const pivot = augmented[pivotRow][column];
+        if (!Number.isFinite(pivot) || Math.abs(pivot) < 1e-9) {
+          return null;
+        }
+
+        [augmented[column], augmented[pivotRow]] = [augmented[pivotRow], augmented[column]];
+        pivots.push(Math.abs(augmented[column][column]));
+
+        for (let row = 0; row < size; row += 1) {
+          if (row === column) {
+            continue;
+          }
+          const factor = augmented[row][column] / augmented[column][column];
+          if (Math.abs(factor) < 1e-12) {
+            continue;
+          }
+          for (let entry = column; entry <= size; entry += 1) {
+            augmented[row][entry] -= factor * augmented[column][entry];
+          }
+        }
+      }
+
+      const solution = augmented.map((row, index) => row[size] / row[index]);
+      const minPivot = Math.min(...pivots);
+      const maxPivot = Math.max(...pivots);
+      if (minPivot / maxPivot < 1e-8) {
+        return null;
+      }
+      return solution;
+    }
+
+    function solveTruss(frontX) {
+      const circles = [...jointCircles.querySelectorAll("circle")];
+      const lines = [...memberLines.querySelectorAll("line")];
+      const vehiclesName = document.querySelector("#vehicleSelect").value;
+      const nodeCount = circles.length;
+      const unknownCount = lines.length + 3;
+
+      if (unknownCount !== nodeCount * 2) {
+        return {
+          stable: false,
+          message: `Unstable: the truss has ${lines.length} members and ${nodeCount} joints, so M + 3 must equal 2 × J.`
+        };
+      }
+
+      const pin = circles.find((circle) => circle.hasAttribute("data-fixed")
+        && circle.getAttribute("data-fixed") === "pin");
+      const roller = circles.find((circle) => circle.hasAttribute("data-fixed")
+        && circle.getAttribute("data-fixed") === "roller");
+      if (!pin || !roller) {
+        return { stable: false, message: "Unstable: both the pin and roller supports are required." };
+      }
+
+      const nodeIndex = new Map(circles.map((circle, index) => [circle, index]));
+      const matrix = Array.from({ length: unknownCount }, () => Array(unknownCount).fill(0));
+      const rhs = Array(unknownCount).fill(0);
+      const nodalLoads = distributeAxleLoads(frontX, vehiclesName);
+
+      nodalLoads.forEach((load, circle) => {
+        const index = nodeIndex.get(circle);
+        if (index !== undefined) {
+          rhs[index * 2 + 1] -= load;
+        }
+      });
+
+      lines.forEach((line, memberIndex) => {
+        const start = circles.find((circle) =>
+          Math.abs(Number(circle.getAttribute("cx")) - Number(line.getAttribute("x1"))) < 1
+          && Math.abs(Number(circle.getAttribute("cy")) - Number(line.getAttribute("y1"))) < 1);
+        const end = circles.find((circle) =>
+          Math.abs(Number(circle.getAttribute("cx")) - Number(line.getAttribute("x2"))) < 1
+          && Math.abs(Number(circle.getAttribute("cy")) - Number(line.getAttribute("y2"))) < 1);
+        if (!start || !end) {
+          return;
+        }
+
+        const startPosition = getFootPosition(start);
+        const endPosition = getFootPosition(end);
+        const dx = endPosition.x - startPosition.x;
+        const dy = endPosition.y - startPosition.y;
+        const length = Math.hypot(dx, dy);
+        if (length < 0.0001) {
+          return;
+        }
+
+        const startIndex = nodeIndex.get(start);
+        const endIndex = nodeIndex.get(end);
+        const ux = dx / length;
+        const uy = dy / length;
+        matrix[startIndex * 2][memberIndex] += ux;
+        matrix[startIndex * 2 + 1][memberIndex] += uy;
+        matrix[endIndex * 2][memberIndex] -= ux;
+        matrix[endIndex * 2 + 1][memberIndex] -= uy;
+      });
+
+      const pinIndex = nodeIndex.get(pin);
+      const rollerIndex = nodeIndex.get(roller);
+      matrix[pinIndex * 2][lines.length] = 1;
+      matrix[pinIndex * 2 + 1][lines.length + 1] = 1;
+      matrix[rollerIndex * 2 + 1][lines.length + 2] = 1;
+
+      const solution = gaussSolve(matrix, rhs);
+      if (!solution) {
+        return { stable: false, message: "Unstable: the equilibrium system is singular or nearly singular." };
+      }
+
+      const memberForces = solution.slice(0, lines.length);
+      const reactions = {
+        pinX: solution[lines.length],
+        pinY: solution[lines.length + 1],
+        rollerY: solution[lines.length + 2]
+      };
+      return { stable: true, memberForces, reactions, lines, circles, nodalLoads };
+    }
+
+    function formatForce(force) {
+      return `${force >= 0 ? "+" : ""}${force.toLocaleString("en-US", {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 0
+      })}`;
+    }
+
+    function renderSolverResult(result) {
+      const reactionTable = document.querySelector("#reactionTable tbody");
+      const memberTable = document.querySelector("#memberTable tbody");
+      document.querySelector("#solverMessage").textContent = result.message
+        || `Parked load solved at front axle x = ${document.querySelector("#frontAxlePosition").value} ft.`;
+
+      reactionTable.replaceChildren();
+      memberTable.replaceChildren();
+
+      if (!result.stable) {
+        return;
+      }
+
+      [
+        ["Pin X", result.reactions.pinX],
+        ["Pin Y", result.reactions.pinY],
+        ["Roller Y", result.reactions.rollerY]
+      ].forEach(([label, force]) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${label}</td><td>${formatForce(force)}</td>`;
+        reactionTable.appendChild(row);
+      });
+
+      result.memberForces.forEach((force, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>Member ${index + 1}</td><td>${formatForce(force)}</td>`;
+        memberTable.appendChild(row);
+      });
     }
 
     svg.addEventListener("mousemove", (event) => {
@@ -780,6 +1066,51 @@
     document.querySelector("#dragJointTool").addEventListener("click", () => {
       setActiveTool("dragJointTool");
       hint.textContent = "Drag Joint: drag a structural joint on the 1 ft grid.";
+    });
+    document.querySelector("#detailsToggle").addEventListener("click", () => {
+      const panel = document.querySelector("#detailsPanel");
+      const toggle = document.querySelector("#detailsToggle");
+      const isOpen = panel.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", String(isOpen));
+      toggle.textContent = isOpen ? "Close details" : "Open details";
+    });
+    document.querySelector("#parkButton").addEventListener("click", () => {
+      const positionInput = document.querySelector("#frontAxlePosition");
+      let frontX = Number(positionInput.value);
+      if (!Number.isFinite(frontX)) {
+        frontX = 44;
+      }
+      frontX = Math.max(0, Math.min(60, frontX));
+      positionInput.value = frontX;
+      const result = solveTruss(frontX);
+      renderSolverResult(result);
+      if (result.stable) {
+        const detailsPanel = document.querySelector("#detailsPanel");
+        const detailsToggle = document.querySelector("#detailsToggle");
+        if (!detailsPanel.classList.contains("open")) {
+          detailsPanel.classList.add("open");
+          detailsToggle.setAttribute("aria-expanded", "true");
+          detailsToggle.textContent = "Close details";
+        }
+
+        result.memberForces.forEach((force, index) => {
+          const line = result.lines[index];
+          const capacity = force >= 0 ? 90000 : 75000;
+          const ratio = Math.abs(force) / capacity;
+          if (ratio > 1) {
+            line.setAttribute("stroke", "#111");
+          } else if (ratio >= 0.8) {
+            line.setAttribute("stroke", "#e33b23");
+          } else if (ratio >= 0.5) {
+            line.setAttribute("stroke", "#f0a91f");
+          } else {
+            line.setAttribute("stroke", "#8a5a36");
+          }
+        });
+        hint.textContent = `Parked load solved at front axle x = ${frontX} ft.`;
+      } else {
+        hint.textContent = result.message;
+      }
     });
     document.querySelector("#clearBridgeTool").addEventListener("click", () => {
       memberLines.replaceChildren();

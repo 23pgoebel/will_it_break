@@ -59,3 +59,7 @@
 - **Request:** Fix member attachment to the bridge deck and make Escape detach partially placed members from the chained joint.
 - **Changes:** Allowed snapped existing deck joints as member endpoints while retaining 10 ft rules for new deck joints, and added an Escape-key handler that clears the current first endpoint and member outline.
 - **Worked:** Yes. The served page contains the deck snap rule and Escape reset behavior, and the diff passes whitespace checks.
+
+- **Request:** Build Stage 3, the truss and stability calculation stage.
+- **Changes:** Added axle-load distribution, Gaussian elimination for a method-of-joints equilibrium system, pin/roller reactions, member axial-force tables, nearly-singular and determinacy checks, positive-tension/negative-compression formatting, Park/Solve behavior, and member capacity coloring for parked loads.
+- **Worked:** Yes. The Stage 3 solver markup is served successfully and the diff passes whitespace validation.
