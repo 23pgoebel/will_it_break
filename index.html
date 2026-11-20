@@ -317,6 +317,15 @@
       outline: 3px solid #f2b84b;
       outline-offset: 2px;
     }
+
+    #jointCircles circle {
+      cursor: default;
+    }
+
+    #jointCircles circle[data-member-joint="true"],
+    #jointCircles circle:not([data-fixed]):not([data-deck]) {
+      cursor: move;
+    }
   </style>
 </head>
 <body>
@@ -361,21 +370,14 @@
               <pattern id="smallGrid" x="100" y="110" width="16.6667" height="7.2" patternUnits="userSpaceOnUse">
                 <path d="M 16.6667 0 L 0 0 0 7.2" fill="none" stroke="#dbe3e8" stroke-width="1"/>
               </pattern>
-              <pattern id="road" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                <rect width="24" height="24" fill="#dfe6e9"/>
-                <rect width="12" height="24" fill="#d5dde1"/>
-              </pattern>
             </defs>
 
             <rect width="1200" height="500" fill="#fff"/>
             <rect x="100" y="110" width="1000" height="180" fill="url(#smallGrid)" stroke="#dbe3e8"/>
 
-            <rect x="0" y="312" width="250" height="96" rx="4" fill="url(#road)" stroke="#bdc8ce"/>
-            <rect x="950" y="312" width="250" height="96" rx="4" fill="url(#road)" stroke="#bdc8ce"/>
-
             <g aria-label="Bridge abutments">
-              <polygon points="100,290 250,408 100,408" fill="#c9b99f" stroke="#17212b" stroke-width="3"/>
-              <polygon points="1100,290 950,408 1100,408" fill="#c9b99f" stroke="#17212b" stroke-width="3"/>
+              <polygon points="0,290 100,290 250,408 0,408" fill="#c9b99f" stroke="#17212b" stroke-width="3"/>
+              <polygon points="1200,290 1100,290 950,408 1200,408" fill="#c9b99f" stroke="#17212b" stroke-width="3"/>
             </g>
 
             <rect x="100" y="290" width="1000" height="12" rx="4" fill="#9a7b57"/>
@@ -410,9 +412,9 @@
               <circle data-deck="true" cx="767" cy="290" r="7"/>
               <circle data-deck="true" cx="934" cy="290" r="7"/>
               <circle data-fixed="roller" cx="1100" cy="290" r="9"/>
-              <circle cx="350" cy="180" r="8"/>
-              <circle cx="600" cy="120" r="8"/>
-              <circle cx="850" cy="180" r="8"/>
+              <circle data-member-joint="true" cx="350" cy="180" r="8"/>
+              <circle data-member-joint="true" cx="600" cy="120" r="8"/>
+              <circle data-member-joint="true" cx="850" cy="180" r="8"/>
             </g>
 
             <g fill="#61717f" font-size="14" text-anchor="middle">
@@ -467,19 +469,19 @@
         <h2 class="panel-title">Bridge status</h2>
         <div class="stat">
           <span class="stat-label">Cost</span>
-          <span class="stat-value">$12,500</span>
+          <span class="stat-value" id="bridgeCost">$2,500</span>
         </div>
         <div class="stat">
           <span class="stat-label">Structural joints</span>
-          <span class="stat-value">3</span>
+          <span class="stat-value" id="jointCount">3</span>
         </div>
         <div class="stat">
           <span class="stat-label">Members</span>
-          <span class="stat-value">10</span>
+          <span class="stat-value" id="memberCount">10</span>
         </div>
         <div class="stat">
           <span class="stat-label">Stability</span>
-          <span class="stat-value safe">Stable</span>
+          <span class="stat-value safe" id="stabilityStatus">Incomplete</span>
         </div>
       </aside>
     </section>
@@ -496,7 +498,7 @@
     const memberOutline = document.querySelector("#memberOutline");
     const hint = document.querySelector(".hint");
     const toolButtons = [...document.querySelectorAll(".tool")];
-    let activeTool = "add-member";
+    let activeTool = "addMemberTool";
     let firstMemberPoint = null;
     const originX = 100;
     const originY = 290;
@@ -507,19 +509,89 @@
       const bounds = svg.getBoundingClientRect();
       const svgX = (clientX - bounds.left) * 1200 / bounds.width;
       const svgY = (clientY - bounds.top) * 500 / bounds.height;
-      const footX = Math.round((svgX - originX) / feetPerSvgX);
-      const footY = Math.round((originY - svgY) / svgPerFootY);
+      let footX = Math.round((svgX - originX) / feetPerSvgX);
+      let footY = Math.round((originY - svgY) / svgPerFootY);
 
       if (footX < 0 || footX > 60 || footY < 0 || footY > 25) {
         return null;
       }
 
+      let snappedSvgX = originX + footX * feetPerSvgX;
+      let snappedSvgY = originY - footY * svgPerFootY;
+      let nearestJoint = null;
+      let nearestDistance = Infinity;
+
+      [...jointCircles.querySelectorAll("circle")].forEach((circle) => {
+        const jointSvgX = Number(circle.getAttribute("cx"));
+        const jointSvgY = Number(circle.getAttribute("cy"));
+        const dxFeet = (svgX - jointSvgX) / feetPerSvgX;
+        const dyFeet = (svgY - jointSvgY) / svgPerFootY;
+        const distanceFeet = Math.hypot(dxFeet, dyFeet);
+
+        if (distanceFeet <= 2 && distanceFeet < nearestDistance) {
+          nearestDistance = distanceFeet;
+          nearestJoint = circle;
+        }
+      });
+
+      if (nearestJoint) {
+        snappedSvgX = Number(nearestJoint.getAttribute("cx"));
+        snappedSvgY = Number(nearestJoint.getAttribute("cy"));
+        footX = (snappedSvgX - originX) / feetPerSvgX;
+        footY = (originY - snappedSvgY) / svgPerFootY;
+      }
+
       return {
         footX,
         footY,
-        svgX: originX + footX * feetPerSvgX,
-        svgY: originY - footY * svgPerFootY
+        svgX: snappedSvgX,
+        svgY: snappedSvgY,
+        snappedToJoint: Boolean(nearestJoint)
       };
+    }
+
+    function updateBridgeStatus() {
+      const joints = [...jointCircles.querySelectorAll("circle")];
+      const lines = [...memberLines.querySelectorAll("line")];
+      const structuralJoints = joints.filter((circle) =>
+        !circle.hasAttribute("data-fixed") && !circle.hasAttribute("data-deck")
+      );
+      const structuralMembers = lines.filter((line) => {
+        const y1 = Number(line.getAttribute("y1"));
+        const y2 = Number(line.getAttribute("y2"));
+        return y1 !== originY || y2 !== originY;
+      });
+
+      let memberCost = 0;
+      structuralMembers.forEach((line) => {
+        const dxFeet = Math.abs(Number(line.getAttribute("x2")) - Number(line.getAttribute("x1"))) / feetPerSvgX;
+        const dyFeet = Math.abs(Number(line.getAttribute("y2")) - Number(line.getAttribute("y1"))) / svgPerFootY;
+        memberCost += Math.hypot(dxFeet, dyFeet) * 100;
+      });
+
+      const cost = structuralJoints.length * 500 + memberCost;
+      const jointCount = structuralJoints.length;
+      const memberCount = structuralMembers.length;
+      const jointTotal = joints.length;
+      const memberTotal = lines.length;
+      let stability = "Incomplete";
+      let stabilityClass = "";
+
+      if (memberTotal + 3 === jointTotal * 2) {
+        stability = "Stable";
+        stabilityClass = "safe";
+      } else if (memberTotal + 3 > jointTotal * 2) {
+        stability = "Overstiff";
+        stabilityClass = "";
+      }
+
+      document.querySelector("#bridgeCost").textContent =
+        `$${Math.round(cost).toLocaleString("en-US")}`;
+      document.querySelector("#jointCount").textContent = jointCount;
+      document.querySelector("#memberCount").textContent = memberCount;
+      document.querySelector("#stabilityStatus").textContent = stability;
+      document.querySelector("#stabilityStatus").className =
+        `stat-value ${stabilityClass}`.trim();
     }
 
     svg.addEventListener("mousemove", (event) => {
@@ -586,6 +658,117 @@
       });
     }
 
+    let draggedCircle = null;
+    let suppressSvgClick = false;
+
+    function rawGridPoint(clientX, clientY) {
+      const bounds = svg.getBoundingClientRect();
+      const svgX = (clientX - bounds.left) * 1200 / bounds.width;
+      const svgY = (clientY - bounds.top) * 500 / bounds.height;
+      const footX = Math.max(0, Math.min(60, Math.round((svgX - originX) / feetPerSvgX)));
+      const footY = Math.max(0, Math.min(25, Math.round((originY - svgY) / svgPerFootY)));
+      return {
+        footX,
+        footY,
+        svgX: originX + footX * feetPerSvgX,
+        svgY: originY - footY * svgPerFootY
+      };
+    }
+
+    jointCircles.addEventListener("pointerdown", (event) => {
+      const circle = event.target.closest("circle");
+      if (!circle || activeTool !== "dragJointTool"
+        || circle.hasAttribute("data-fixed") || circle.hasAttribute("data-deck")) {
+        return;
+      }
+      draggedCircle = circle;
+      suppressSvgClick = true;
+      draggedCircle.dataset.lastCx = circle.getAttribute("cx");
+      draggedCircle.dataset.lastCy = circle.getAttribute("cy");
+      circle.setPointerCapture(event.pointerId);
+      hint.textContent = "Dragging joint. Release it at a 1 ft grid intersection.";
+    });
+
+    svg.addEventListener("pointermove", (event) => {
+      if (!draggedCircle) {
+        return;
+      }
+      const point = rawGridPoint(event.clientX, event.clientY);
+      if (point.footY === 0 && point.footX !== 0 && point.footX !== 60
+        && point.footX % 10 !== 0) {
+        return;
+      }
+
+      draggedCircle.setAttribute("cx", point.svgX);
+      draggedCircle.setAttribute("cy", point.svgY);
+      [...memberLines.querySelectorAll("line")].forEach((line) => {
+        if (Math.abs(Number(line.getAttribute("x1")) - Number(draggedCircle.dataset.lastCx || -9999)) < 1
+          && Math.abs(Number(line.getAttribute("y1")) - Number(draggedCircle.dataset.lastCy || -9999)) < 1) {
+          line.setAttribute("x1", point.svgX);
+          line.setAttribute("y1", point.svgY);
+        }
+        if (Math.abs(Number(line.getAttribute("x2")) - Number(draggedCircle.dataset.lastCx || -9999)) < 1
+          && Math.abs(Number(line.getAttribute("y2")) - Number(draggedCircle.dataset.lastCy || -9999)) < 1) {
+          line.setAttribute("x2", point.svgX);
+          line.setAttribute("y2", point.svgY);
+        }
+      });
+
+      draggedCircle.dataset.lastCx = point.svgX;
+      draggedCircle.dataset.lastCy = point.svgY;
+    });
+
+    svg.addEventListener("pointerup", (event) => {
+      if (!draggedCircle) {
+        return;
+      }
+
+      const cx = Number(draggedCircle.getAttribute("cx"));
+      const cy = Number(draggedCircle.getAttribute("cy"));
+      let mergedJoint = null;
+      let nearestDistance = Infinity;
+
+      [...jointCircles.querySelectorAll("circle")].forEach((circle) => {
+        if (circle === draggedCircle) {
+          return;
+        }
+        const dxFeet = (Number(circle.getAttribute("cx")) - cx) / feetPerSvgX;
+        const dyFeet = (Number(circle.getAttribute("cy")) - cy) / svgPerFootY;
+        const distanceFeet = Math.hypot(dxFeet, dyFeet);
+        if (distanceFeet <= 2 && distanceFeet < nearestDistance) {
+          nearestDistance = distanceFeet;
+          mergedJoint = circle;
+        }
+      });
+
+      if (mergedJoint) {
+        const mergedCx = Number(mergedJoint.getAttribute("cx"));
+        const mergedCy = Number(mergedJoint.getAttribute("cy"));
+        [...memberLines.querySelectorAll("line")].forEach((line) => {
+          if (Math.abs(Number(line.getAttribute("x1")) - cx) < 1
+            && Math.abs(Number(line.getAttribute("y1")) - cy) < 1) {
+            line.setAttribute("x1", mergedCx);
+            line.setAttribute("y1", mergedCy);
+          }
+          if (Math.abs(Number(line.getAttribute("x2")) - cx) < 1
+            && Math.abs(Number(line.getAttribute("y2")) - cy) < 1) {
+            line.setAttribute("x2", mergedCx);
+            line.setAttribute("y2", mergedCy);
+          }
+        });
+        draggedCircle.remove();
+      }
+
+      delete draggedCircle.dataset.lastCx;
+      delete draggedCircle.dataset.lastCy;
+      draggedCircle = null;
+      hint.textContent = "Joint drag complete.";
+      updateBridgeStatus();
+      window.setTimeout(() => {
+        suppressSvgClick = false;
+      }, 0);
+    });
+
     document.querySelector("#addMemberTool").addEventListener("click", () => {
       setActiveTool("addMemberTool");
       hint.textContent = "Add Member: click the first endpoint, then the second endpoint.";
@@ -596,7 +779,7 @@
     });
     document.querySelector("#dragJointTool").addEventListener("click", () => {
       setActiveTool("dragJointTool");
-      hint.textContent = "Drag Joint: joint dragging is not active in the Stage 1 mockup.";
+      hint.textContent = "Drag Joint: drag a structural joint on the 1 ft grid.";
     });
     document.querySelector("#clearBridgeTool").addEventListener("click", () => {
       memberLines.replaceChildren();
@@ -608,9 +791,14 @@
       firstMemberPoint = null;
       setActiveTool("addMemberTool");
       hint.textContent = "Bridge cleared. The deck joints and supports are unchanged.";
+      updateBridgeStatus();
     });
 
     svg.addEventListener("click", (event) => {
+      if (suppressSvgClick) {
+        suppressSvgClick = false;
+        return;
+      }
       if (event.target.closest("#previewVehicle")) {
         return;
       }
@@ -621,6 +809,7 @@
           line.remove();
           removeOrphanMemberJoints();
           hint.textContent = "Member erased.";
+          updateBridgeStatus();
         } else {
           hint.textContent = "Click a member to erase it.";
         }
@@ -633,6 +822,7 @@
           line.remove();
           removeOrphanMemberJoints();
           hint.textContent = "Member erased.";
+          updateBridgeStatus();
         } else {
           hint.textContent = "Click a member to erase it.";
         }
@@ -698,7 +888,9 @@
       memberLines.appendChild(line);
       hint.textContent = `Member added with joints at both endpoints: (${firstMemberPoint.footX}, ${firstMemberPoint.footY}) and (${point.footX}, ${point.footY}).`;
       firstMemberPoint = point;
+      updateBridgeStatus();
     });
+    updateBridgeStatus();
   </script>
 </body>
 </html>

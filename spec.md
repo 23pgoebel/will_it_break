@@ -28,6 +28,7 @@
 - Show existing and proposed member lengths in the hint/status area.
 - Use click-to-place on allowed intersections and show a live cursor hint.
 - Disable placement on the roadway/deck except at the fixed 10 ft deck joints
+- When a member endpoint is clicked within 2 ft of an existing joint, the new endpoint snaps exactly onto that joint and duplicate joints are automatically combined.
 
 ## Calculations
 - A truss solver using the method of joints as one linear system, with a message instead of numbers when the truss is unstable (it needs members + 3 = 2 × joints, and a system that isn't nearly singular)

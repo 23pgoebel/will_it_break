@@ -43,3 +43,15 @@
 - **Request:** Make the grid exactly 1 ft by 1 ft, reverse the support abutment slopes to face each other, and chain members from the last joint with a cursor outline.
 - **Changes:** Constrained the grid pattern to the 60 ft by 25 ft SVG bridge field with 1 ft spacing in both directions, replaced the support blocks with inward-facing triangular slopes, and added a dashed live member outline starting from the last endpoint.
 - **Worked:** Yes. The latest mockup serves correctly and the diff passes whitespace checks.
+
+- **Request:** Automatically snap a newly placed member joint onto an existing joint when the cursor is within 2 ft of it.
+- **Changes:** Added Euclidean 2 ft joint proximity snapping to the shared grid/cursor snap function in `index.html`, so clicks and the live member outline both reuse existing joints; added the behavior to `spec.md`.
+- **Worked:** Yes. The snap function and specification are updated, and the diff passes whitespace checks.
+
+- **Request:** Remove the gray striped blocks under the supports and extend the brown abutments toward the screen edges.
+- **Changes:** Removed the striped road rectangles and extended the left and right brown abutment polygons from the support joints toward the left and right edges while keeping the slopes facing the bridge center.
+- **Worked:** Yes. The updated page serves correctly and the diff passes whitespace checks.
+
+- **Request:** Build Stage 2, the functional Build-mode editing experience.
+- **Changes:** Added live cost, structural joint/member counts, and stability status; enabled structural joint dragging, 1 ft snapping, 2 ft duplicate-joint merging, member-chain placement, live outlines, member erasing, orphan-joint cleanup, and bridge clearing while preserving fixed and deck joints.
+- **Worked:** Yes. The Stage 2 page is served successfully, contains the editing controls and live status elements, and passes diff whitespace validation.
