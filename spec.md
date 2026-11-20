@@ -29,6 +29,8 @@
 - Use click-to-place on allowed intersections and show a live cursor hint.
 - Disable placement on the roadway/deck except at the fixed 10 ft deck joints
 - Members may attach to existing deck joints, supports, and any snapped existing joint. Pressing Escape during member placement detaches the partially placed member from the chained last joint and requires a new first joint.
+- The bridge deck includes exactly six modeled members and seven deck joints. The determination calculation counts these members and joints.
+- The interface states how many additional members are needed for determinacy or how many redundant members are present. Redundant structural members are visually highlighted with a pink dashed style.
 - When a member endpoint is clicked within 2 ft of an existing joint, the new endpoint snaps exactly onto that joint and duplicate joints are automatically combined.
 
 ## Calculations

@@ -232,6 +232,17 @@
       color: #247a46;
     }
 
+    .member-hint {
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
+
+    #memberLines line.redundant {
+      stroke: #e44e78;
+      stroke-dasharray: 16 8;
+    }
+
     .details {
       display: flex;
       align-items: center;
@@ -421,6 +432,12 @@
             <rect x="100" y="302" width="1000" height="6" fill="#bd9d76"/>
 
             <g id="memberLines" stroke="#8a5a36" stroke-width="10" stroke-linecap="round" data-members>
+              <line data-deck-member="true" x1="100" y1="290" x2="266" y2="290"/>
+              <line data-deck-member="true" x1="266" y1="290" x2="433" y2="290"/>
+              <line data-deck-member="true" x1="433" y1="290" x2="600" y2="290"/>
+              <line data-deck-member="true" x1="600" y1="290" x2="767" y2="290"/>
+              <line data-deck-member="true" x1="767" y1="290" x2="934" y2="290"/>
+              <line data-deck-member="true" x1="934" y1="290" x2="1100" y2="290"/>
               <line x1="100" y1="290" x2="350" y2="180"/>
               <line x1="350" y1="180" x2="600" y2="120"/>
               <line x1="600" y1="120" x2="850" y2="180"/>
@@ -520,6 +537,9 @@
           <span class="stat-label">Stability</span>
           <span class="stat-value safe" id="stabilityStatus">Incomplete</span>
         </div>
+        <p class="member-hint" id="memberHint" role="status">
+          Add or remove members to reach a determinate bridge.
+        </p>
       </aside>
     </section>
 
@@ -624,13 +644,27 @@
       const memberTotal = lines.length;
       let stability = "Incomplete";
       let stabilityClass = "";
+      let memberHint = "";
+      const memberDifference = memberTotal + 3 - jointTotal * 2;
 
-      if (memberTotal + 3 === jointTotal * 2) {
+      [...lines].forEach((line) => line.classList.remove("redundant"));
+
+      if (memberDifference === 0) {
         stability = "Stable";
         stabilityClass = "safe";
-      } else if (memberTotal + 3 > jointTotal * 2) {
-        stability = "Overstiff";
+        memberHint = "Bridge is determinate: no more structural members are required.";
+      } else if (memberDifference > 0) {
+        stability = "Redundant";
         stabilityClass = "";
+        memberHint = `${memberDifference} redundant member${memberDifference === 1 ? " is" : "s are"} present. Pink dashed members are candidates to remove.`;
+        const structuralLines = lines.filter((line) =>
+          !line.hasAttribute("data-deck-member"));
+        structuralLines
+          .slice(Math.max(0, structuralLines.length - memberDifference))
+          .forEach((line) => line.classList.add("redundant"));
+      } else {
+        const needed = -memberDifference;
+        memberHint = `Add ${needed} more member${needed === 1 ? "" : "s"} to reach a determinate bridge.`;
       }
 
       document.querySelector("#bridgeCost").textContent =
@@ -640,6 +674,7 @@
       document.querySelector("#stabilityStatus").textContent = stability;
       document.querySelector("#stabilityStatus").className =
         `stat-value ${stabilityClass}`.trim();
+      document.querySelector("#memberHint").textContent = memberHint;
     }
 
     const VEHICLE_AXLES = {
@@ -1113,7 +1148,11 @@
       }
     });
     document.querySelector("#clearBridgeTool").addEventListener("click", () => {
-      memberLines.replaceChildren();
+      [...memberLines.querySelectorAll("line")].forEach((line) => {
+        if (!line.hasAttribute("data-deck-member")) {
+          line.remove();
+        }
+      });
       [...jointCircles.querySelectorAll("circle")].forEach((circle) => {
         if (!circle.hasAttribute("data-fixed") && !circle.hasAttribute("data-deck")) {
           circle.remove();
@@ -1152,6 +1191,10 @@
       if (activeTool === "erase-member") {
         const line = event.target.closest("line");
         if (line && memberLines.contains(line)) {
+          if (line.hasAttribute("data-deck-member")) {
+            hint.textContent = "Deck members cannot be erased.";
+            return;
+          }
           line.remove();
           removeOrphanMemberJoints();
           hint.textContent = "Member erased.";
@@ -1165,6 +1208,10 @@
       if (activeTool === "eraseMemberTool") {
         const line = event.target.closest("line");
         if (line && memberLines.contains(line)) {
+          if (line.hasAttribute("data-deck-member")) {
+            hint.textContent = "Deck members cannot be erased.";
+            return;
+          }
           line.remove();
           removeOrphanMemberJoints();
           hint.textContent = "Member erased.";

@@ -63,3 +63,7 @@
 - **Request:** Build Stage 3, the truss and stability calculation stage.
 - **Changes:** Added axle-load distribution, Gaussian elimination for a method-of-joints equilibrium system, pin/roller reactions, member axial-force tables, nearly-singular and determinacy checks, positive-tension/negative-compression formatting, Park/Solve behavior, and member capacity coloring for parked loads.
 - **Worked:** Yes. The Stage 3 solver markup is served successfully and the diff passes whitespace validation.
+
+- **Request:** Include the six deck members and seven deck joints in determinacy, allow member attachment to deck joints, and add member-count and redundant-member hints.
+- **Changes:** Modeled six deck members, preserved the seven deck joints, included all deck items in determinacy calculations, added live add/remove member guidance, and highlighted redundant structural members in pink dashes.
+- **Worked:** Yes. The served page includes six deck members, determinacy guidance, and redundant-member highlighting; the diff passes whitespace validation.
