@@ -576,7 +576,7 @@
           </label>
           <div class="test-actions">
             <button type="button" id="parkButton">Park / Solve</button>
-            <button class="primary" id="driveButton" type="button">Place Vehicle</button>
+            <button class="primary" id="driveButton" type="button">Drive Across</button>
             <button id="pauseButton" type="button" disabled>Pause</button>
           </div>
         </div>
@@ -961,17 +961,6 @@
 
       wheelPositions.forEach((position) => {
         const offset = position * feetPerSvgX;
-        if (position !== wheelPositions[0]) {
-          const axleLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-          axleLine.setAttribute("x1", wheelPositions[0] * feetPerSvgX);
-          axleLine.setAttribute("x2", offset);
-          axleLine.setAttribute("y1", "278");
-          axleLine.setAttribute("y2", "278");
-          axleLine.setAttribute("stroke", "#111");
-          axleLine.setAttribute("stroke-width", "5");
-          axleLine.setAttribute("pointer-events", "none");
-          wheels.appendChild(axleLine);
-        }
         const outer = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         outer.setAttribute("cx", offset);
         outer.setAttribute("cy", "278");
@@ -1534,7 +1523,12 @@
     });
 
     document.querySelector("#pauseButton").addEventListener("click", () => {
-      hint.textContent = "Vehicle movement is disabled. The vehicle remains parked.";
+      if (!driveTimer) {
+        return;
+      }
+      drivePaused = !drivePaused;
+      document.querySelector("#pauseButton").textContent = drivePaused ? "Resume" : "Pause";
+      hint.textContent = drivePaused ? "Vehicle paused." : "Vehicle moving.";
     });
 
     document.querySelector("#driveButton").addEventListener("click", () => {
@@ -1543,23 +1537,53 @@
         hint.textContent = "Switch to Test mode before driving.";
         return;
       }
-      testFrontX = Number(document.querySelector("#frontAxlePosition").value);
-      if (!Number.isFinite(testFrontX)) {
-        testFrontX = 44;
-      }
-      testFrontX = Math.max(0, Math.min(60, testFrontX));
-      setTestVehicle(testFrontX);
-      document.querySelector("#pauseButton").disabled = true;
-      document.querySelector("#pauseButton").textContent = "Pause";
 
-      const result = solveTruss(testFrontX);
-      renderSolverResult(result);
-      if (result.stable) {
+      testFrontX = 0;
+      setTestVehicle(testFrontX);
+      document.querySelector("#pauseButton").disabled = false;
+      document.querySelector("#pauseButton").textContent = "Pause";
+      hint.textContent = "Vehicle is driving across the bridge.";
+
+      driveTimer = window.setInterval(() => {
+        if (drivePaused) {
+          return;
+        }
+
+        const crossingVehicle = VEHICLE_VISUAL[document.querySelector("#vehicleSelect").value];
+        const rearAxleOffset = crossingVehicle.offsets[crossingVehicle.offsets.length - 1];
+        const finalFrontPosition = 60 - rearAxleOffset;
+        testFrontX = Math.min(finalFrontPosition, testFrontX + 0.5);
+        setTestVehicle(testFrontX);
+        const result = solveTruss(testFrontX);
+        if (!result.stable) {
+          stopDrive();
+          renderSolverResult(result);
+          hint.textContent = result.message;
+          return;
+        }
+
+        renderSolverResult(result);
         applyMemberColors(result.memberForces);
-        hint.textContent = `Vehicle remains parked at front axle x = ${testFrontX} ft.`;
-      } else {
-        hint.textContent = result.message;
-      }
+
+        const failedMemberIndex = result.memberForces.findIndex((force) => {
+          const capacity = force >= 0 ? 90000 : 75000;
+          return Math.abs(force) / capacity > 1;
+        });
+
+        if (failedMemberIndex >= 0) {
+          const failedLine = result.lines[failedMemberIndex];
+          if (failedLine) {
+            failedLine.setAttribute("stroke", "#111");
+          }
+          showFailure(failedMemberIndex);
+          return;
+        }
+
+        const rearAxlePosition = testFrontX + rearAxleOffset;
+        if (rearAxlePosition >= 60) {
+          showSuccess(document.querySelector("#vehicleSelect").value);
+        }
+      }, 120);
     });
 
     document.querySelector("#restartButton").addEventListener("click", () => {

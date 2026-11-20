@@ -116,10 +116,6 @@
 - **Changes:** Updated the inline SVG artwork for a yellow checked taxi, yellow dump truck with raised dirt bed, blue tractor-trailer, and red ladder fire engine.
 - **Worked:** Yes. Browser verification confirmed all four vehicle selections render and the page has no JavaScript errors.
 
-- **Request:** Remove vehicle animation and connect the wheels with a black line.
-- **Changes:** Removed the timed Drive Across movement loop, retained vehicle placement at the selected front axle, and added a black wheel axle line beneath each set of vehicle wheels.
-- **Worked:** Yes. Browser verification confirms the vehicle remains stationary and the semi has two black axle lines and six wheel circles.
-
 - **Request:** Show yellow-to-red for compression and green-to-blue for tension, including tension on deck members.
 - **Changes:** Updated member capacity colors for structural and deck members, with black retained for exceeded capacity.
 - **Worked:** Yes. Browser verification confirmed deck compression and structural tension/compression colors, and the diff passes whitespace checks.
@@ -151,3 +147,11 @@
 - **Request:** Verify the axle loads and offsets for every vehicle.
 - **Changes:** Compared `VEHICLE_AXLES` and `distributeAxleLoads()` with the specified vehicle table; no code changes were needed.
 - **Worked:** The offset sign was corrected: rear axles are behind the front axle and subtract their listed offsets from front axle position.
+
+- **Request:** Undo the code from the last command.
+- **Changes:** Reverted commit `58375e8`, restoring timed vehicle motion and removing the added wheel axle lines; preserved the user's updated validation values.
+- **Worked:** Yes. The last commit's code changes are reversed.
+
+- **Request:** Undo the code from the last command.
+- **Changes:** Reverted commit `58375e8`, restoring vehicle animation and removing the added wheel axle lines.
+- **Worked:** Yes. The last commit's code changes are reversed and staged for a revert commit.
