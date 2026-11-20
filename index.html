@@ -277,6 +277,44 @@
       flex-wrap: wrap;
     }
 
+    .result-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 12px;
+      padding: 12px 14px;
+      border: 2px solid #2f7d4d;
+      border-radius: 8px;
+      background: #edf8f1;
+      color: #1f5535;
+    }
+
+    .result-banner.visible {
+      display: flex;
+    }
+
+    .result-banner.failed {
+      border-color: #a43b3b;
+      background: #fff1f1;
+      color: #7a2525;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .result-actions button {
+      min-height: 36px;
+      border: 1px solid currentColor;
+      border-radius: 6px;
+      padding: 0 12px;
+      background: #fff;
+      color: inherit;
+    }
+
     .details-table {
       width: 100%;
       border-collapse: collapse;
@@ -566,6 +604,17 @@
           Add or remove members to reach a determinate bridge.
         </p>
       </aside>
+    </section>
+
+    <section class="result-banner" id="resultBanner" role="alert" aria-live="assertive">
+      <div>
+        <strong id="resultTitle"></strong>
+        <div id="resultMessage"></div>
+      </div>
+      <div class="result-actions">
+        <button id="restartButton" type="button">Restart</button>
+        <button id="driveAnotherButton" type="button">Drive Another Vehicle</button>
+      </div>
     </section>
 
     <section class="details" id="detailsPanel" aria-label="Details panel">
@@ -1084,6 +1133,35 @@
       })}`;
     }
 
+    function showFailure(memberIndex) {
+      stopDrive();
+      const banner = document.querySelector("#resultBanner");
+      banner.classList.add("visible", "failed");
+      document.querySelector("#resultTitle").textContent = "Your Bridge Failed";
+      document.querySelector("#resultMessage").textContent =
+        `Member ${memberIndex + 1} exceeded its allowable tension or compression capacity.`;
+      document.querySelector("#restartButton").hidden = false;
+      document.querySelector("#driveAnotherButton").hidden = true;
+      document.querySelector("#stabilityStatus").textContent = "Failed";
+      document.querySelector("#stabilityStatus").className = "stat-value";
+      hint.textContent = `Your Bridge Failed at member ${memberIndex + 1}.`;
+    }
+
+    function showSuccess(vehicleName) {
+      stopDrive();
+      const banner = document.querySelector("#resultBanner");
+      banner.classList.remove("failed");
+      banner.classList.add("visible");
+      document.querySelector("#resultTitle").textContent = "Vehicle Crossed Safely";
+      document.querySelector("#resultMessage").textContent =
+        `${vehicleName} crossed the entire 60 ft bridge without exceeding a member capacity.`;
+      document.querySelector("#restartButton").hidden = true;
+      document.querySelector("#driveAnotherButton").hidden = false;
+      document.querySelector("#stabilityStatus").textContent = "Safe";
+      document.querySelector("#stabilityStatus").className = "stat-value safe";
+      hint.textContent = "Vehicle crossed safely.";
+    }
+
     function renderSolverResult(result) {
       const reactionTable = document.querySelector("#reactionTable tbody");
       const memberTable = document.querySelector("#memberTable tbody");
@@ -1314,12 +1392,14 @@
       document.querySelector("#buildModeButton").setAttribute("aria-pressed", "true");
       document.querySelector("#testModeButton").setAttribute("aria-pressed", "false");
       document.querySelector("#testVehicle").setAttribute("opacity", "0");
+      updateBridgeStatus();
       hint.textContent = "Build mode: add or edit structural members.";
     });
 
     document.querySelector("#testModeButton").addEventListener("click", () => {
       isTestMode = true;
       stopDrive();
+      document.querySelector("#resultBanner").classList.remove("visible", "failed");
       document.querySelector(".workspace").classList.add("test-mode");
       document.querySelector("#testModeButton").classList.add("active");
       document.querySelector("#buildModeButton").classList.remove("active");
@@ -1420,26 +1500,37 @@
         });
 
         if (failedMemberIndex >= 0) {
-          stopDrive();
           const failedLine = result.lines[failedMemberIndex];
           if (failedLine) {
             failedLine.setAttribute("stroke", "#111");
           }
-          document.querySelector("#stabilityStatus").textContent = "Failed";
-          document.querySelector("#stabilityStatus").className = "stat-value";
-          hint.textContent = `Your Bridge Failed at member ${failedMemberIndex + 1}.`;
+          showFailure(failedMemberIndex);
           return;
         }
 
         const rearAxlePosition = testFrontX + rearAxleOffset;
         if (rearAxlePosition >= 60) {
-          stopDrive();
-          document.querySelector("#stabilityStatus").textContent = "Safe";
-          document.querySelector("#stabilityStatus").className = "stat-value safe";
-          hint.textContent = "Vehicle crossed safely.";
+          showSuccess(document.querySelector("#vehicleSelect").value);
         }
       }, 120);
     });
+
+    document.querySelector("#restartButton").addEventListener("click", () => {
+      stopDrive();
+      const banner = document.querySelector("#resultBanner");
+      banner.classList.remove("visible", "failed");
+      document.querySelector("#buildModeButton").click();
+      hint.textContent = "Restarted in Build mode. The current bridge is unchanged.";
+    });
+
+    document.querySelector("#driveAnotherButton").addEventListener("click", () => {
+      stopDrive();
+      const banner = document.querySelector("#resultBanner");
+      banner.classList.remove("visible", "failed");
+      document.querySelector("#testModeButton").click();
+      hint.textContent = "Choose another vehicle or change the parked position.";
+    });
+
     document.querySelector("#clearBridgeTool").addEventListener("click", () => {
       snapshotBridge();
       [...memberLines.querySelectorAll("line")].forEach((line) => {

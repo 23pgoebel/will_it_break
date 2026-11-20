@@ -99,3 +99,11 @@
 - **Request:** Fix incorrect joint and member counts after clearing the bridge.
 - **Changes:** Changed status totals to count every SVG joint and member, including the seven deck joints and six permanent deck members.
 - **Worked:** Yes. Browser verification confirmed 12 joints and 21 members initially, 7 joints and 6 members after clear, and restoration after Undo.
+
+- **Request:** Build Stage 5, the results and details stage.
+- **Changes:** Added reaction/member details tables and result banners, with Restart preserving the bridge and returning to Build mode, and Drive Another Vehicle returning to Test mode.
+- **Worked:** Browser verification confirmed success, failure, details, Restart, and Drive Another behavior.
+
+- **Request:** Build Stage 5, the results and details stage.
+- **Changes:** Added the closed-by-default reaction/member force tables, visible success and failure result banners, a Restart action that preserves the bridge, and a Drive Another Vehicle action that returns to Test mode.
+- **Worked:** Pending final browser and diff verification.
