@@ -71,3 +71,7 @@
 - **Request:** Remove the preview car, replace the solid deck band with six undeletable deck members and fixed deck joints, and allow member attachment to deck joints.
 - **Changes:** Removed the preview vehicle and solid deck rectangle, retained the seven deck joints and six deck members as permanent bridge elements, and removed deck-point attachment restrictions.
 - **Worked:** Yes. The served page has only the six modeled deck members and seven fixed deck joints; no preview vehicle or solid deck band remains, and the diff passes whitespace checks.
+
+- **Request:** Build Stage 4, the Test-mode vehicle interaction stage.
+- **Changes:** Added Build/Test mode switching, four selectable 2D vehicles, front-axle position control, Park/Solve, Drive Across, Pause/Resume, 0.5 ft crossing calculations, live capacity colors, failure stopping, and safe-crossing status. Member forces remain in the details panel rather than on the bridge.
+- **Worked:** Yes. The Stage 4 controls and 0.5 ft animation logic are served successfully and the diff passes whitespace validation.

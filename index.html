@@ -157,7 +157,7 @@
     }
 
     .test-controls {
-      display: flex;
+      display: none;
       align-items: end;
       gap: 10px;
       min-height: 78px;
@@ -366,6 +366,26 @@
       outline-offset: 2px;
     }
 
+    .workspace.test-mode {
+      grid-template-columns: minmax(420px, 1fr) 210px;
+    }
+
+    .workspace.test-mode .tool-panel {
+      display: none;
+    }
+
+    .workspace.test-mode .canvas-panel {
+      grid-column: 1;
+    }
+
+    .workspace.test-mode .status-panel {
+      grid-column: 2;
+    }
+
+    .workspace.test-mode .test-controls {
+      display: flex;
+    }
+
     #jointCircles circle {
       cursor: default;
     }
@@ -381,8 +401,8 @@
     <header class="topbar">
       <h1>Will it Break?</h1>
       <nav class="mode-switch" aria-label="App mode">
-        <button class="active" type="button" aria-pressed="true">Build</button>
-        <button type="button" aria-pressed="false">Test</button>
+        <button class="active" id="buildModeButton" type="button" aria-pressed="true">Build</button>
+        <button id="testModeButton" type="button" aria-pressed="false">Test</button>
       </nav>
     </header>
 
@@ -468,6 +488,13 @@
               <circle data-member-joint="true" cx="850" cy="180" r="8"/>
             </g>
 
+            <g id="testVehicle" transform="translate(100 0)" opacity="0" pointer-events="none" aria-label="Test vehicle">
+              <path id="vehicleBody" d="M-72 246 L-48 246 L-28 218 L28 218 L52 246 L74 246 L86 258 L86 278 L-84 278 L-84 258 Z"
+                    fill="#d9b72c" stroke="#17212b" stroke-width="3" stroke-linejoin="round"/>
+              <path id="vehicleWindows" d="M-24 222 L18 222 L43 246 L-48 246 Z" fill="#a9cad4" stroke="#17212b" stroke-width="2"/>
+              <g id="vehicleWheels"></g>
+            </g>
+
             <g fill="#61717f" font-size="14" text-anchor="middle">
               <text x="100" y="350">0 ft</text>
               <text x="266" y="350">10 ft</text>
@@ -497,8 +524,8 @@
           </label>
           <div class="test-actions">
             <button type="button" id="parkButton">Park / Solve</button>
-            <button class="primary" type="button">Drive Across</button>
-            <button type="button">Pause</button>
+            <button class="primary" id="driveButton" type="button">Drive Across</button>
+            <button id="pauseButton" type="button" disabled>Pause</button>
           </div>
         </div>
       </section>
@@ -682,6 +709,94 @@
         { offset: 21.5, load: 27000 }
       ]
     };
+
+    const VEHICLE_VISUAL = {
+      "Car": { color: "#d9b72c", offsets: [0, -10], width: 160, label: "Car" },
+      "Loaded Dump Truck": { color: "#bd642f", offsets: [0, -14, -18.5], width: 210, label: "Loaded Dump Truck" },
+      "Semi": { color: "#5e82a6", offsets: [0, -14, -28], width: 230, label: "Semi" },
+      "Fire Engine": { color: "#c74343", offsets: [0, -17, -21.5], width: 220, label: "Fire Engine" }
+    };
+
+    let testFrontX = 44;
+    let driveTimer = null;
+    let drivePaused = false;
+    let isTestMode = false;
+
+    function stopDrive() {
+      if (driveTimer) {
+        window.clearInterval(driveTimer);
+        driveTimer = null;
+      }
+      drivePaused = false;
+      document.querySelector("#pauseButton").disabled = true;
+      document.querySelector("#pauseButton").textContent = "Pause";
+    }
+
+    function setTestVehicle(frontX) {
+      const vehicleName = document.querySelector("#vehicleSelect").value;
+      const visual = VEHICLE_VISUAL[vehicleName];
+      const frontWheelX = 100 + frontX * feetPerSvgX;
+      const rearOffset = visual.offsets[visual.offsets.length - 1];
+      const halfWidth = visual.width / 2;
+      const bodyLeft = -Math.max(80, visual.width - 65);
+      const bodyRight = 75;
+
+      testFrontX = frontX;
+      document.querySelector("#frontAxlePosition").value = frontX;
+      const vehicle = document.querySelector("#testVehicle");
+      vehicle.setAttribute("transform", `translate(${frontWheelX} 0)`);
+      vehicle.setAttribute("opacity", "1");
+
+      document.querySelector("#vehicleBody").setAttribute("d",
+        `M${bodyLeft} 246 L${bodyLeft + 24} 246 L${bodyLeft + 44} 218 L30 218 L52 246 L${bodyRight} 246 L${bodyRight + 12} 258 L${bodyRight + 12} 278 L${bodyLeft} 278 Z`);
+      document.querySelector("#vehicleBody").setAttribute("fill", visual.color);
+      document.querySelector("#vehicleWindows").setAttribute("d",
+        `M${bodyLeft + 44} 222 L16 222 L30 246 L${bodyLeft + 24} 246 Z`);
+
+      const wheels = document.querySelector("#vehicleWheels");
+      wheels.replaceChildren();
+      const wheelPositions = [0, rearOffset * feetPerSvgX];
+      wheelPositions.forEach((offset) => {
+        const outer = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        outer.setAttribute("cx", offset);
+        outer.setAttribute("cy", "278");
+        outer.setAttribute("r", "13");
+        outer.setAttribute("fill", "#17212b");
+        const inner = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        inner.setAttribute("cx", offset);
+        inner.setAttribute("cy", "278");
+        inner.setAttribute("r", "6");
+        inner.setAttribute("fill", "#eef2f4");
+        wheels.appendChild(outer);
+        wheels.appendChild(inner);
+      });
+
+      vehicle.setAttribute("aria-label", `${visual.label} with front axle at ${frontX} feet`);
+    }
+
+    function applyMemberColors(memberForces) {
+      [...memberLines.querySelectorAll("line")].forEach((line, index) => {
+        if (line.hasAttribute("data-deck-member")) {
+          line.setAttribute("stroke", "#9a7b57");
+          return;
+        }
+
+        const force = memberForces[index] || 0;
+        const capacity = force >= 0 ? 90000 : 75000;
+        const ratio = Math.abs(force) / capacity;
+        if (ratio > 1) {
+          line.setAttribute("stroke", "#111");
+        } else if (ratio >= 0.8) {
+          line.setAttribute("stroke", "#e33b23");
+        } else if (ratio >= 0.5) {
+          line.setAttribute("stroke", "#f0a91f");
+        } else if (ratio >= 0.333333) {
+          line.setAttribute("stroke", "#b9a05a");
+        } else {
+          line.setAttribute("stroke", "#8a5a36");
+        }
+      });
+    }
 
     function getFootPosition(circle) {
       return {
@@ -1088,6 +1203,31 @@
       toggle.setAttribute("aria-expanded", String(isOpen));
       toggle.textContent = isOpen ? "Close details" : "Open details";
     });
+
+    document.querySelector("#buildModeButton").addEventListener("click", () => {
+      isTestMode = false;
+      stopDrive();
+      document.querySelector(".workspace").classList.remove("test-mode");
+      document.querySelector("#buildModeButton").classList.add("active");
+      document.querySelector("#testModeButton").classList.remove("active");
+      document.querySelector("#buildModeButton").setAttribute("aria-pressed", "true");
+      document.querySelector("#testModeButton").setAttribute("aria-pressed", "false");
+      document.querySelector("#testVehicle").setAttribute("opacity", "0");
+      hint.textContent = "Build mode: add or edit structural members.";
+    });
+
+    document.querySelector("#testModeButton").addEventListener("click", () => {
+      isTestMode = true;
+      stopDrive();
+      document.querySelector(".workspace").classList.add("test-mode");
+      document.querySelector("#testModeButton").classList.add("active");
+      document.querySelector("#buildModeButton").classList.remove("active");
+      document.querySelector("#testModeButton").setAttribute("aria-pressed", "true");
+      document.querySelector("#buildModeButton").setAttribute("aria-pressed", "false");
+      setActiveTool("eraseMemberTool");
+      setTestVehicle(testFrontX);
+      hint.textContent = "Test mode: park or drive a vehicle across the bridge.";
+    });
     document.querySelector("#parkButton").addEventListener("click", () => {
       const positionInput = document.querySelector("#frontAxlePosition");
       let frontX = Number(positionInput.value);
@@ -1096,6 +1236,7 @@
       }
       frontX = Math.max(0, Math.min(60, frontX));
       positionInput.value = frontX;
+      setTestVehicle(frontX);
       const result = solveTruss(frontX);
       renderSolverResult(result);
       if (result.stable) {
@@ -1107,24 +1248,92 @@
           detailsToggle.textContent = "Close details";
         }
 
-        result.memberForces.forEach((force, index) => {
-          const line = result.lines[index];
-          const capacity = force >= 0 ? 90000 : 75000;
-          const ratio = Math.abs(force) / capacity;
-          if (ratio > 1) {
-            line.setAttribute("stroke", "#111");
-          } else if (ratio >= 0.8) {
-            line.setAttribute("stroke", "#e33b23");
-          } else if (ratio >= 0.5) {
-            line.setAttribute("stroke", "#f0a91f");
-          } else {
-            line.setAttribute("stroke", "#8a5a36");
-          }
-        });
+        applyMemberColors(result.memberForces);
         hint.textContent = `Parked load solved at front axle x = ${frontX} ft.`;
       } else {
         hint.textContent = result.message;
       }
+    });
+
+    document.querySelector("#vehicleSelect").addEventListener("change", () => {
+      stopDrive();
+      setTestVehicle(testFrontX);
+      hint.textContent = "Vehicle changed. Park or drive it across the bridge.";
+    });
+
+    document.querySelector("#frontAxlePosition").addEventListener("input", (event) => {
+      let frontX = Number(event.target.value);
+      if (Number.isFinite(frontX)) {
+        frontX = Math.round(frontX * 2) / 2;
+        frontX = Math.max(0, Math.min(60, frontX));
+        setTestVehicle(frontX);
+      }
+    });
+
+    document.querySelector("#pauseButton").addEventListener("click", () => {
+      if (!driveTimer) {
+        return;
+      }
+      drivePaused = !drivePaused;
+      document.querySelector("#pauseButton").textContent = drivePaused ? "Resume" : "Pause";
+      hint.textContent = drivePaused ? "Vehicle paused." : "Vehicle moving.";
+    });
+
+    document.querySelector("#driveButton").addEventListener("click", () => {
+      stopDrive();
+      if (!isTestMode) {
+        hint.textContent = "Switch to Test mode before driving.";
+        return;
+      }
+
+      testFrontX = 0;
+      setTestVehicle(testFrontX);
+      document.querySelector("#pauseButton").disabled = false;
+      document.querySelector("#pauseButton").textContent = "Pause";
+      hint.textContent = "Vehicle is driving across the bridge.";
+
+      driveTimer = window.setInterval(() => {
+        if (drivePaused) {
+          return;
+        }
+
+        testFrontX = Math.min(60, testFrontX + 0.5);
+        setTestVehicle(testFrontX);
+        const result = solveTruss(testFrontX);
+        if (!result.stable) {
+          stopDrive();
+          renderSolverResult(result);
+          hint.textContent = result.message;
+          return;
+        }
+
+        renderSolverResult(result);
+        applyMemberColors(result.memberForces);
+
+        const failedMemberIndex = result.memberForces.findIndex((force) => {
+          const capacity = force >= 0 ? 90000 : 75000;
+          return Math.abs(force) / capacity > 1;
+        });
+
+        if (failedMemberIndex >= 0) {
+          stopDrive();
+          const failedLine = result.lines[failedMemberIndex];
+          if (failedLine) {
+            failedLine.setAttribute("stroke", "#111");
+          }
+          document.querySelector("#stabilityStatus").textContent = "Failed";
+          document.querySelector("#stabilityStatus").className = "stat-value";
+          hint.textContent = `Your Bridge Failed at member ${failedMemberIndex + 1}.`;
+          return;
+        }
+
+        if (testFrontX >= 60) {
+          stopDrive();
+          document.querySelector("#stabilityStatus").textContent = "Safe";
+          document.querySelector("#stabilityStatus").className = "stat-value safe";
+          hint.textContent = "Vehicle crossed safely.";
+        }
+      }, 120);
     });
     document.querySelector("#clearBridgeTool").addEventListener("click", () => {
       [...memberLines.querySelectorAll("line")].forEach((line) => {
