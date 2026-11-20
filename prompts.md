@@ -87,3 +87,7 @@
 - **Request:** Change the diagonal member directions.
 - **Changes:** Reversed all six diagonal web members so their slopes are corrected.
 - **Worked:** Yes. The corrected diagonal directions are served and the diff passes whitespace checks.
+
+- **Request:** Fix the buttons and the diagonal truss directions.
+- **Changes:** Removed a duplicate JavaScript `visual` declaration that blocked button handlers, verified Build/Test, Park/Solve, and Pause in the browser, and corrected the six diagonal web endpoints to the Pratt alternating pattern.
+- **Worked:** Yes. Browser testing confirms the buttons respond and the page loads without the prior page script error.

@@ -471,12 +471,12 @@
               <line x1="600" y1="290" x2="600" y2="218"/>
               <line x1="767" y1="290" x2="767" y2="218"/>
               <line x1="934" y1="290" x2="934" y2="218"/>
-              <line x1="266" y1="218" x2="100" y2="290"/>
-              <line x1="433" y1="218" x2="266" y2="290"/>
-              <line x1="600" y1="218" x2="433" y2="290"/>
-              <line x1="767" y1="290" x2="600" y2="218"/>
-              <line x1="934" y1="290" x2="767" y2="218"/>
-              <line x1="1100" y1="290" x2="934" y2="218"/>
+              <line x1="100" y1="290" x2="266" y2="218"/>
+              <line x1="266" y1="218" x2="433" y2="290"/>
+              <line x1="433" y1="290" x2="600" y2="218"/>
+              <line x1="600" y1="218" x2="767" y2="290"/>
+              <line x1="767" y1="290" x2="934" y2="218"/>
+              <line x1="934" y1="218" x2="1100" y2="290"/>
             </g>
             <line id="memberOutline" x1="0" y1="0" x2="0" y2="0"
                   stroke="#285c87" stroke-width="4" stroke-dasharray="10 7"
@@ -1400,8 +1400,8 @@
           return;
         }
 
-        const visual = VEHICLE_VISUAL[document.querySelector("#vehicleSelect").value];
-        const rearAxleOffset = visual.offsets[visual.offsets.length - 1];
+        const crossingVehicle = VEHICLE_VISUAL[document.querySelector("#vehicleSelect").value];
+        const rearAxleOffset = crossingVehicle.offsets[crossingVehicle.offsets.length - 1];
         const finalFrontPosition = 60 - rearAxleOffset;
         testFrontX = Math.min(finalFrontPosition, testFrontX + 0.5);
         setTestVehicle(testFrontX);
@@ -1433,8 +1433,6 @@
           return;
         }
 
-        const visual = VEHICLE_VISUAL[document.querySelector("#vehicleSelect").value];
-        const rearAxleOffset = visual.offsets[visual.offsets.length - 1];
         const rearAxlePosition = testFrontX + rearAxleOffset;
         if (rearAxlePosition >= 60) {
           stopDrive();
