@@ -358,7 +358,7 @@
         <div class="canvas">
           <svg viewBox="0 0 1200 500" role="img" aria-label="Mockup of the 60 foot by 25 foot bridge grid">
             <defs>
-              <pattern id="smallGrid" width="16.6667" height="7.2" patternUnits="userSpaceOnUse">
+              <pattern id="smallGrid" x="100" y="110" width="16.6667" height="7.2" patternUnits="userSpaceOnUse">
                 <path d="M 16.6667 0 L 0 0 0 7.2" fill="none" stroke="#dbe3e8" stroke-width="1"/>
               </pattern>
               <pattern id="road" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
@@ -368,14 +368,14 @@
             </defs>
 
             <rect width="1200" height="500" fill="#fff"/>
-            <rect width="1200" height="500" fill="url(#smallGrid)"/>
+            <rect x="100" y="110" width="1000" height="180" fill="url(#smallGrid)" stroke="#dbe3e8"/>
 
             <rect x="0" y="312" width="250" height="96" rx="4" fill="url(#road)" stroke="#bdc8ce"/>
             <rect x="950" y="312" width="250" height="96" rx="4" fill="url(#road)" stroke="#bdc8ce"/>
 
             <g aria-label="Bridge abutments">
-              <polygon points="100,290 250,290 250,408 20,408" fill="#c9b99f" stroke="#17212b" stroke-width="3"/>
-              <polygon points="1100,290 950,290 950,408 1180,408" fill="#c9b99f" stroke="#17212b" stroke-width="3"/>
+              <polygon points="100,290 250,408 100,408" fill="#c9b99f" stroke="#17212b" stroke-width="3"/>
+              <polygon points="1100,290 950,408 1100,408" fill="#c9b99f" stroke="#17212b" stroke-width="3"/>
             </g>
 
             <rect x="100" y="290" width="1000" height="12" rx="4" fill="#9a7b57"/>
@@ -393,6 +393,9 @@
               <line x1="767" y1="290" x2="850" y2="180"/>
               <line x1="934" y1="290" x2="850" y2="180"/>
             </g>
+            <line id="memberOutline" x1="0" y1="0" x2="0" y2="0"
+                  stroke="#285c87" stroke-width="4" stroke-dasharray="10 7"
+                  stroke-linecap="round" opacity="0" pointer-events="none"/>
 
             <g fill="none" stroke="#17212b" stroke-width="5">
               <path d="M100 290 L72 318 L128 318 Z"/>
@@ -490,6 +493,7 @@
     const svg = document.querySelector(".canvas svg");
     const jointCircles = document.querySelector("#jointCircles");
     const memberLines = document.querySelector("#memberLines");
+    const memberOutline = document.querySelector("#memberOutline");
     const hint = document.querySelector(".hint");
     const toolButtons = [...document.querySelectorAll(".tool")];
     let activeTool = "add-member";
@@ -518,9 +522,29 @@
       };
     }
 
+    svg.addEventListener("mousemove", (event) => {
+      if (activeTool !== "addMemberTool" || !firstMemberPoint) {
+        memberOutline.setAttribute("opacity", "0");
+        return;
+      }
+
+      const point = snapToFootGrid(event.clientX, event.clientY);
+      if (!point) {
+        memberOutline.setAttribute("opacity", "0");
+        return;
+      }
+
+      memberOutline.setAttribute("x1", firstMemberPoint.svgX);
+      memberOutline.setAttribute("y1", firstMemberPoint.svgY);
+      memberOutline.setAttribute("x2", point.svgX);
+      memberOutline.setAttribute("y2", point.svgY);
+      memberOutline.setAttribute("opacity", "0.9");
+    });
+
     function setActiveTool(tool) {
       activeTool = tool;
       firstMemberPoint = null;
+      memberOutline.setAttribute("opacity", "0");
       toolButtons.forEach((button) => button.classList.remove("active"));
       document.querySelector(`#${tool}`).classList.add("active");
     }
@@ -639,7 +663,7 @@
       if (Math.abs(firstMemberPoint.svgX - point.svgX) < 1
         && Math.abs(firstMemberPoint.svgY - point.svgY) < 1) {
         hint.textContent = "A member needs two distinct endpoints.";
-        firstMemberPoint = null;
+        firstMemberPoint = point;
         return;
       }
 
@@ -653,7 +677,11 @@
       });
       if (duplicate) {
         hint.textContent = "A member already exists between those joints.";
-        firstMemberPoint = null;
+        firstMemberPoint = point;
+        memberOutline.setAttribute("x1", point.svgX);
+        memberOutline.setAttribute("y1", point.svgY);
+        memberOutline.setAttribute("x2", point.svgX);
+        memberOutline.setAttribute("y2", point.svgY);
         return;
       }
 
@@ -669,7 +697,7 @@
       line.setAttribute("stroke-linecap", "round");
       memberLines.appendChild(line);
       hint.textContent = `Member added with joints at both endpoints: (${firstMemberPoint.footX}, ${firstMemberPoint.footY}) and (${point.footX}, ${point.footY}).`;
-      firstMemberPoint = null;
+      firstMemberPoint = point;
     });
   </script>
 </body>

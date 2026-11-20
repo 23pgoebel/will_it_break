@@ -39,3 +39,7 @@
 - **Request:** Remove the Place Joint button, add pink and black tool icons, and make members create and merge joints automatically.
 - **Changes:** Removed the Place Joint control, added an inline pink eraser icon and black trash-can icon, and implemented member endpoint joints, duplicate-joint merging, duplicate-member prevention, member erasing, and bridge clearing in the mockup.
 - **Worked:** Yes. The updated page serves correctly and the final diff passes whitespace checks.
+
+- **Request:** Make the grid exactly 1 ft by 1 ft, reverse the support abutment slopes to face each other, and chain members from the last joint with a cursor outline.
+- **Changes:** Constrained the grid pattern to the 60 ft by 25 ft SVG bridge field with 1 ft spacing in both directions, replaced the support blocks with inward-facing triangular slopes, and added a dashed live member outline starting from the last endpoint.
+- **Worked:** Yes. The latest mockup serves correctly and the diff passes whitespace checks.
