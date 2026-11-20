@@ -136,6 +136,10 @@
 - **Changes:** Parsed the actual 12-joint/21-member Pratt geometry, solved the semi-load equilibrium independently, and verified the maximum residual and rank.
 - **Worked:** The independent solve agrees with the app at the 44 ft semi position, with reactions 3,200 lb and 36,800 lb and the same 21 member forces. The maximum equilibrium residual was 2.77e-11. The listed validation forces of 80,000 lb top chord, 70,400 lb bottom chord, and 13,576.45 lb diagonal do not match these 44 ft, on-span axle-load results; this should be reconciled before using that validation example.
 
+- **Request:** Compare the updated validation targets with the app calculations.
+- **Changes:** Re-ran the independent method-of-joints solve for the 44 ft semi position and compared it with the new 80,000 / 70,400 / 13,576.45 lb targets.
+- **Worked:** No match. The app and independent solve produce member forces of 12,806.4 lb for the top segment, 15,843.82 lb as the largest compression in the top/right web region, and 15,843.82 lb not 13,576.45 lb in the 20–30 ft diagonal. The spec targets therefore remain inconsistent with the listed axle loads and starting bridge.
+
 - **Request:** Verify the axle loads and offsets for every vehicle.
 - **Changes:** Compared `VEHICLE_AXLES` and `distributeAxleLoads()` with the specified vehicle table; no code changes were needed.
 - **Worked:** The implementation matches all listed loads and offsets. Axle 0 is the front axle; remaining offsets are measured backward. Axles outside the 0–60 ft bridge span are excluded.
