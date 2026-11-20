@@ -135,3 +135,7 @@
 - **Request:** Independently double-check all truss member stresses.
 - **Changes:** Parsed the actual 12-joint/21-member Pratt geometry, solved the semi-load equilibrium independently, and verified the maximum residual and rank.
 - **Worked:** The independent solve agrees with the app at the 44 ft semi position, with reactions 3,200 lb and 36,800 lb and the same 21 member forces. The maximum equilibrium residual was 2.77e-11. The listed validation forces of 80,000 lb top chord, 70,400 lb bottom chord, and 13,576.45 lb diagonal do not match these 44 ft, on-span axle-load results; this should be reconciled before using that validation example.
+
+- **Request:** Verify the axle loads and offsets for every vehicle.
+- **Changes:** Compared `VEHICLE_AXLES` and `distributeAxleLoads()` with the specified vehicle table; no code changes were needed.
+- **Worked:** The implementation matches all listed loads and offsets. Axle 0 is the front axle; remaining offsets are measured backward. Axles outside the 0–60 ft bridge span are excluded.
