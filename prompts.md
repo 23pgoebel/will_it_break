@@ -140,6 +140,10 @@
 - **Changes:** Re-ran the independent method-of-joints solve for the 44 ft semi position and compared it with the new 80,000 / 70,400 / 13,576.45 lb targets.
 - **Worked:** No match. The app and independent solve produce member forces of 12,806.4 lb for the top segment, 15,843.82 lb as the largest compression in the top/right web region, and 15,843.82 lb not 13,576.45 lb in the 20–30 ft diagonal. The spec targets therefore remain inconsistent with the listed axle loads and starting bridge.
 
+- **Request:** Fix the semi validation by verifying rear axle offsets and method-of-joints results.
+- **Changes:** Changed rear axle offsets to subtract 14 ft and 28 ft from the front axle position, matching “measured back from the front axle.”
+- **Worked:** At the 44 ft semi position, the method-of-joints result now gives 80,000 lb compression on the x20–30 top-chord member, 70,380.8 lb tension on the x20–30 bottom deck member, and 13,590.03 lb tension on the x20–30 diagonal. The bottom and diagonal differ from the literal spec targets by 19.2 lb and 13.58 lb, respectively.
+
 - **Request:** Verify the axle loads and offsets for every vehicle.
 - **Changes:** Compared `VEHICLE_AXLES` and `distributeAxleLoads()` with the specified vehicle table; no code changes were needed.
-- **Worked:** The implementation matches all listed loads and offsets. Axle 0 is the front axle; remaining offsets are measured backward. Axles outside the 0–60 ft bridge span are excluded.
+- **Worked:** The offset sign was corrected: rear axles are behind the front axle and subtract their listed offsets from front axle position.

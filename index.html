@@ -1034,7 +1034,7 @@
         .sort((a, b) => a.position.x - b.position.x);
 
       axleData.forEach((axle) => {
-        const axlePosition = frontX + (typeof axle.offset === "number" ? axle.offset : 0);
+        const axlePosition = frontX - (typeof axle.offset === "number" ? axle.offset : 0);
         const load = typeof axle.load === "number" ? axle.load : axle;
         if (axlePosition < 0 || axlePosition > 60) {
           return;
