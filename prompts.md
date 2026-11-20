@@ -107,3 +107,11 @@
 - **Request:** Build Stage 5, the results and details stage.
 - **Changes:** Added the closed-by-default reaction/member force tables, visible success and failure result banners, a Restart action that preserves the bridge, and a Drive Another Vehicle action that returns to Test mode.
 - **Worked:** Pending final browser and diff verification.
+
+- **Request:** Change the semi truck image to look like a semi truck.
+- **Changes:** Replaced the semi artwork with a tractor cab, separate long trailer, cab window, trailer rails, headlight, and rear-axle wheels.
+- **Worked:** Pending final served-page and diff verification.
+
+- **Request:** Make the car, dump truck, semi, and fire engine resemble the attached reference images.
+- **Changes:** Updated the inline SVG artwork for a yellow checked taxi, yellow dump truck with raised dirt bed, blue tractor-trailer, and red ladder fire engine.
+- **Worked:** Yes. Browser verification confirmed all four vehicle selections render and the page has no JavaScript errors.
