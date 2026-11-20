@@ -3,8 +3,465 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title></title>
+  <title>Will it Break?</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17212b;
+      --muted: #61717f;
+      --line: #d7dfe5;
+      --panel: #f7f9fb;
+      --grid: #edf1f4;
+      --deck: #9a7b57;
+      --wood: #8a5a36;
+      --blue: #285c87;
+      --white: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--ink);
+      background: #eef2f4;
+      font-family: Inter, "Segoe UI", sans-serif;
+    }
+
+    button,
+    select,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+      background: var(--white);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .mode-switch {
+      display: inline-flex;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .mode-switch button {
+      min-width: 78px;
+      border: 0;
+      border-radius: 5px;
+      padding: 7px 12px;
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .mode-switch .active {
+      color: var(--white);
+      background: var(--blue);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 150px minmax(420px, 1fr) 210px;
+      gap: 12px;
+      min-height: 0;
+      padding: 12px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--white);
+    }
+
+    .tool-panel,
+    .status-panel {
+      padding: 12px;
+    }
+
+    .panel-title {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .tool-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .tool {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: var(--ink);
+      background: var(--white);
+      text-align: left;
+    }
+
+    .tool.active {
+      border-color: var(--blue);
+      box-shadow: inset 3px 0 var(--blue);
+      background: #edf4fa;
+    }
+
+    .canvas-panel {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .hint {
+      min-height: 42px;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--panel);
+      font-size: 0.9rem;
+    }
+
+    .canvas {
+      min-height: 420px;
+      background: var(--white);
+      overflow: hidden;
+    }
+
+    .canvas svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .test-controls {
+      display: flex;
+      align-items: end;
+      gap: 10px;
+      min-height: 78px;
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .control {
+      display: grid;
+      gap: 5px;
+      min-width: 150px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .control select,
+    .control input {
+      width: 100%;
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 8px;
+      background: var(--white);
+    }
+
+    .test-actions {
+      display: flex;
+      gap: 7px;
+      margin-left: auto;
+    }
+
+    .test-actions button,
+    .details-toggle {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 12px;
+      background: var(--white);
+    }
+
+    .test-actions .primary {
+      border-color: var(--blue);
+      color: var(--white);
+      background: var(--blue);
+    }
+
+    .status-panel {
+      display: grid;
+      align-content: start;
+      gap: 14px;
+    }
+
+    .stat {
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stat-label {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .stat-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .safe {
+      color: #247a46;
+    }
+
+    .details {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 52px;
+      margin: 0 12px 12px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+    }
+
+    .details-toggle {
+      color: var(--blue);
+    }
+
+    @media (max-width: 980px) {
+      .workspace {
+        grid-template-columns: 130px minmax(380px, 1fr);
+      }
+
+      .status-panel {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .stat {
+        border-bottom: 0;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .tool-panel {
+        order: 2;
+      }
+
+      .tool-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .canvas-panel {
+        order: 1;
+      }
+
+      .status-panel {
+        order: 3;
+        grid-column: auto;
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .canvas {
+        min-height: 340px;
+      }
+
+      .test-controls {
+        align-items: stretch;
+        flex-wrap: wrap;
+      }
+
+      .control {
+        min-width: calc(50% - 5px);
+      }
+
+      .test-actions {
+        width: 100%;
+        margin-left: 0;
+      }
+
+      .test-actions button {
+        flex: 1;
+      }
+    }
+
+    :focus-visible {
+      outline: 3px solid #f2b84b;
+      outline-offset: 2px;
+    }
+  </style>
 </head>
 <body>
+  <main class="app">
+    <header class="topbar">
+      <h1>Will it Break?</h1>
+      <nav class="mode-switch" aria-label="App mode">
+        <button class="active" type="button" aria-pressed="true">Build</button>
+        <button type="button" aria-pressed="false">Test</button>
+      </nav>
+    </header>
+
+    <section class="workspace" aria-label="Bridge design workspace">
+      <aside class="panel tool-panel" aria-labelledby="tools-heading">
+        <h2 class="panel-title" id="tools-heading">Build tools</h2>
+        <div class="tool-list">
+          <button class="tool active" type="button">Place Joint</button>
+          <button class="tool" type="button">Add Member</button>
+          <button class="tool" type="button">Erase Member</button>
+          <button class="tool" type="button">Drag Joint</button>
+          <button class="tool" type="button">Clear Bridge</button>
+        </div>
+      </aside>
+
+      <section class="panel canvas-panel" aria-label="60 foot bridge grid">
+        <div class="hint" role="status">Next action: place a joint on an available grid intersection.</div>
+
+        <div class="canvas">
+          <svg viewBox="0 0 1200 500" role="img" aria-label="Mockup of the 60 foot by 25 foot bridge grid">
+            <defs>
+              <pattern id="smallGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#edf1f4" stroke-width="1"/>
+              </pattern>
+              <pattern id="road" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <rect width="24" height="24" fill="#dfe6e9"/>
+                <rect width="12" height="24" fill="#d5dde1"/>
+              </pattern>
+            </defs>
+
+            <rect width="1200" height="500" fill="#fff"/>
+            <rect width="1200" height="500" fill="url(#smallGrid)"/>
+
+            <rect x="0" y="312" width="250" height="96" rx="4" fill="url(#road)" stroke="#bdc8ce"/>
+            <rect x="950" y="312" width="250" height="96" rx="4" fill="url(#road)" stroke="#bdc8ce"/>
+
+            <rect x="100" y="290" width="1000" height="12" rx="4" fill="#9a7b57"/>
+            <rect x="100" y="302" width="1000" height="6" fill="#bd9d76"/>
+
+            <g fill="#fff" stroke="#17212b" stroke-width="3">
+              <circle cx="100" cy="290" r="9"/>
+              <circle cx="266" cy="290" r="7"/>
+              <circle cx="433" cy="290" r="7"/>
+              <circle cx="600" cy="290" r="7"/>
+              <circle cx="767" cy="290" r="7"/>
+              <circle cx="934" cy="290" r="7"/>
+              <circle cx="1100" cy="290" r="9"/>
+              <circle cx="350" cy="180" r="8"/>
+              <circle cx="600" cy="120" r="8"/>
+              <circle cx="850" cy="180" r="8"/>
+            </g>
+
+            <g stroke="#8a5a36" stroke-width="10" stroke-linecap="round">
+              <line x1="100" y1="290" x2="350" y2="180"/>
+              <line x1="350" y1="180" x2="600" y2="120"/>
+              <line x1="600" y1="120" x2="850" y2="180"/>
+              <line x1="850" y1="180" x2="1100" y2="290"/>
+              <line x1="266" y1="290" x2="350" y2="180"/>
+              <line x1="433" y1="290" x2="350" y2="180"/>
+              <line x1="433" y1="290" x2="600" y2="120"/>
+              <line x1="767" y1="290" x2="600" y2="120"/>
+              <line x1="767" y1="290" x2="850" y2="180"/>
+              <line x1="934" y1="290" x2="850" y2="180"/>
+            </g>
+
+            <g fill="none" stroke="#17212b" stroke-width="5">
+              <path d="M100 290 L72 318 L128 318 Z"/>
+              <path d="M1100 290 L1072 318 L1128 318 Z"/>
+            </g>
+
+            <g fill="#61717f" font-size="14" text-anchor="middle">
+              <text x="100" y="350">0 ft</text>
+              <text x="266" y="350">10 ft</text>
+              <text x="433" y="350">20 ft</text>
+              <text x="600" y="350">30 ft</text>
+              <text x="767" y="350">40 ft</text>
+              <text x="934" y="350">50 ft</text>
+              <text x="1100" y="350">60 ft</text>
+            </g>
+
+            <g>
+              <rect x="690" y="250" width="118" height="42" rx="6" fill="#f1d44d" stroke="#17212b"/>
+              <circle cx="728" cy="292" r="10" fill="#17212b"/>
+              <circle cx="770" cy="292" r="10" fill="#17212b"/>
+              <rect x="704" y="258" width="90" height="8" rx="4" fill="#285c87"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="test-controls" aria-label="Test mode controls">
+          <label class="control">
+            Vehicle
+            <select>
+              <option>Semi</option>
+              <option>Car</option>
+              <option>Loaded Dump Truck</option>
+              <option>Fire Engine</option>
+            </select>
+          </label>
+          <label class="control">
+            Front axle position
+            <input type="number" value="44" aria-label="Front axle position in feet">
+          </label>
+          <div class="test-actions">
+            <button type="button">Park</button>
+            <button class="primary" type="button">Drive Across</button>
+            <button type="button">Pause</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel status-panel" aria-label="Bridge status">
+        <h2 class="panel-title">Bridge status</h2>
+        <div class="stat">
+          <span class="stat-label">Cost</span>
+          <span class="stat-value">$12,500</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Structural joints</span>
+          <span class="stat-value">3</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Members</span>
+          <span class="stat-value">10</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Stability</span>
+          <span class="stat-value safe">Stable</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="details" aria-label="Details panel">
+      <span>Details panel</span>
+      <button class="details-toggle" type="button" aria-expanded="false">Open details</button>
+    </section>
+  </main>
 </body>
 </html>

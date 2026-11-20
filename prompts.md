@@ -24,6 +24,10 @@
 - **Changes:** Added the overview after the title and added five implementation stages with build tasks and completion checks; logged the request in `prompts.md`.
 - **Worked:** Yes. The overview and build stages are now in `spec.md`.
 
+- **Request:** Build Stage 1, the static page-layout mockup.
+- **Changes:** Replaced the empty `index.html` with a responsive engineering-dashboard mockup containing the 60 ft grid, deck and supports, build tools, status panel, Test mode controls, vehicle preview, and closed details panel.
+- **Worked:** Yes. The mockup is in `index.html`, serves successfully over a local HTTP server, has no diff whitespace errors, and includes responsive desktop and narrow-screen layouts.
+
 - **Request:** Confirm that repository changes should be committed automatically when the user says to start building a stage of the app.
 - **Changes:** Recorded the workflow preference to commit completed changes for each app-building stage unless the user explicitly says not to.
 - **Worked:** Yes. Future stage-building requests will trigger a commit after verification.
