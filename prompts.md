@@ -163,3 +163,7 @@
 - **Request:** Restore vehicle movement in Test mode while keeping bodies invisible.
 - **Changes:** Restored the 0.5 ft timed Drive Across loop, Pause/Resume behavior, rear-axle crossing completion, and failure/success handling with only wheel circles visible.
 - **Worked:** Yes. Browser verification showed the semi move from 2.5 ft to 6 ft, retain 6 visible wheels, and Pause change to Resume.
+
+- **Request:** Add the app's validation results beneath the Validation section in `spec.md`.
+- **Changes:** Added the 44 ft Semi reactions and the 20–30 ft top chord, bottom chord, and diagonal forces, including tension/compression signs and the reaction equilibrium check.
+- **Worked:** Yes. The app validation results are now documented in `spec.md`.

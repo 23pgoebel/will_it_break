@@ -80,6 +80,15 @@ The answer should be:
 - Bottom Chord: 70,400 lb tension
 - Diagonal 13,576.45 lb tension
 
+### App validation results
+- Parked Semi front axle: x = 44 ft
+- Pin reaction at x = 0: 41,600 lb vertical
+- Roller reaction at x = 60: 30,400 lb vertical
+- Top chord in the 20–30 ft panel: 80,000 lb compression
+- Bottom chord in the 20–30 ft panel: 70,380.8 lb tension
+- Diagonal in the 20–30 ft panel: 13,590.03 lb tension
+- Equilibrium check: pin and roller reactions sum to 72,000 lb, equal to the three on-bridge Semi axle loads.
+
 ## Out of scope
 - The app will not have any 3D elements
 - Members are all made of the same material, no options to change thickness or strength of members will be added
@@ -106,3 +115,9 @@ The answer should be:
 ### 5. Results, details, and restart flow
 - Build the closed-by-default details panel, separate reaction and member force tables, failure banner, success state, Restart control, and Drive Another Vehicle option.
 - Check that tables show signed forces in pounds without peak utilization or peak-position data, successful crossings offer another vehicle, and Restart returns to Build mode while preserving the bridge.
+
+# Features
+- Snap to feature that makes it easier to connect members by automatically merging joints that were placed within a few feet of each other
+- Changed colors so that yellow and red mean compression while green and blue mean tension
+- Added an undo, delete all, and drag joint buttons
+- Added banks beneath each end of the bridge
