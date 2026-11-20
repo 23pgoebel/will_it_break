@@ -26,14 +26,22 @@
 ## Calculations
 - A truss solver using the method of joints as one linear system, with a message instead of numbers when the truss is unstable (it needs members + 3 = 2 × joints, and a system that isn't nearly singular)
     - Member capacities of 90,000 lb in tension and 75,000 lb in compression. In Test mode, members are colored by how close they are to capacity.
-- Cost is calculated by multiplying the number of joints by $500, and the total ft of members by $100, then summing the two products.
+- Cost is calculated by multiplying the number of user-added structural joints outside the deck by $500, and the total ft of user-added structural members outside the deck by $100, then summing the two products. The deck joints, support joints, and deck members do not count toward the cost.
+- Member forces use positive values for tension and negative values for compression.
+- Axle loads are calculated every 0.5 ft of vehicle travel and from axle loads only; bridge weight and vehicle weight beyond the listed axle loads are not included.
 
 ## Outputs
-- Two modes. In Build mode, the user places joints on a 1 ft grid and connects them with members, and a hint on screen says what the next click will do. In Test mode, the drawing tools are hidden and the user picks a vehicle and drives it across.
-- A bridge site with deck joints every 10 ft from x = 0 to x = 60, a pin at x = 0, and a roller at x = 60, which can't be moved or deleted
-- Cost will be displayed and updated as the bridge is being built.
-- A details panel, closed by default, with the joint and member force tables that show the maximum force each member will experience when each vehicle crosses the bridge.
-- In test mode, include an option to park a vehicle at any location x on the bridge, x being the location of the front axle and display a table with the stresses of each member.
+- The app has only Build mode and Test mode. In Build mode, the user places joints on a 1 ft grid and connects them with members, and a hint on screen says what the next click will do. In Test mode, the drawing tools are hidden and the user picks a vehicle and drives it across.
+- A bridge site has deck joints every 10 ft from x = 0 to x = 60, a pin at x = 0, and a roller at x = 60. These joints cannot be moved or deleted.
+- Build mode displays and updates the bridge cost, joint count, member count, and structural stability status.
+- Test mode displays the selected vehicle, its front-axle position, and whether the bridge is currently safe or has failed. Member forces and utilization values are not displayed on the bridge or beside individual members during Test mode.
+- A details panel remains closed by default. It contains separate joint reaction and member force tables, plus labels showing positive as tension and negative as compression. Member forces are reported in pounds.
+- The member force table shows each member's maximum force experienced during each selected vehicle crossing. It does not show peak utilization or where that peak occurs.
+- In parked mode, the user selects the front-axle position x and the details panel shows the forces for each member at that position. It does not display member force values on the bridge.
+- Member colors are the only live stress indication during Test mode: brown indicates a safety factor of at least 2, yellow through red indicates increasing closeness to the applicable tension or compression capacity, and black indicates that the member has exceeded capacity.
+- When a member exceeds capacity, the vehicle stops and a visible failure state appears with the message "Your Bridge Failed", the failed member, and a Restart button. Restart returns to Build mode with the previous bridge intact.
+- If the vehicle completes a crossing safely, show a success state and provide a button to drive another vehicle. The next vehicle option can return to Test mode with the vehicle selector and position controls available.
+- All controls and status messages have keyboard-accessible alternatives, visible focus states, and text descriptions for screen readers.
 
 ## Look and feel
 - App will open to the 60x25ft grid with the bridge deck and joints every 10ft already showing. It will be in build mode. There will be a road on either side of the bridge deck. This will all be 2D with images of the vehicles being 2D from the side, showing 2 wheels. Images of the vehicles will be to scale if possible. Members will look like brown wood when they are withing a safety factor of 2. They will then start turning yellow all the way to bright red when they are near the point of failure. Once the member exceeds the allowable stress, it will turn black, the vehicle will stop, and a message will appear that says "Your Bridge Failed". There will be a button below the message that says "Restart" that will return the user to the build screen where their previous bridge will still be intact.
