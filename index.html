@@ -11,7 +11,7 @@
       --muted: #61717f;
       --line: #d7dfe5;
       --panel: #f7f9fb;
-      --grid: #edf1f4;
+      --grid: #dbe3e8;
       --deck: #9a7b57;
       --wood: #8a5a36;
       --blue: #285c87;
@@ -333,22 +333,33 @@
       <aside class="panel tool-panel" aria-labelledby="tools-heading">
         <h2 class="panel-title" id="tools-heading">Build tools</h2>
         <div class="tool-list">
-          <button class="tool active" type="button">Place Joint</button>
-          <button class="tool" type="button">Add Member</button>
-          <button class="tool" type="button">Erase Member</button>
-          <button class="tool" type="button">Drag Joint</button>
-          <button class="tool" type="button">Clear Bridge</button>
+          <button class="tool active" id="addMemberTool" type="button">Add Member</button>
+          <button class="tool" id="eraseMemberTool" type="button" aria-label="Erase member">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" style="vertical-align:-4px;margin-right:5px">
+              <path d="M3 11.5 10.5 4l3.5 3.5-7.5 7.5H5.5Z" fill="#f49ac2" stroke="#c43b84" stroke-width="1.5"/>
+              <path d="m6.5 15 7.5-7.5" stroke="#c43b84" stroke-width="1.5"/>
+            </svg>
+            Erase Member
+          </button>
+          <button class="tool" id="dragJointTool" type="button">Drag Joint</button>
+          <button class="tool" id="clearBridgeTool" type="button" aria-label="Clear bridge">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" style="vertical-align:-4px;margin-right:5px">
+              <path d="M5 6h8l-.7 9H5.7Z" fill="#111" stroke="#111" stroke-width="1"/>
+              <path d="M3.5 4h11M7 2.5h4M7 4v11M11 4v11" fill="none" stroke="#111" stroke-width="1.5"/>
+            </svg>
+            Clear Bridge
+          </button>
         </div>
       </aside>
 
       <section class="panel canvas-panel" aria-label="60 foot bridge grid">
-        <div class="hint" role="status">Next action: place a joint on an available grid intersection.</div>
+        <div class="hint" role="status">Add Member: click the first endpoint, then the second endpoint.</div>
 
         <div class="canvas">
           <svg viewBox="0 0 1200 500" role="img" aria-label="Mockup of the 60 foot by 25 foot bridge grid">
             <defs>
-              <pattern id="smallGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#edf1f4" stroke-width="1"/>
+              <pattern id="smallGrid" width="16.6667" height="7.2" patternUnits="userSpaceOnUse">
+                <path d="M 16.6667 0 L 0 0 0 7.2" fill="none" stroke="#dbe3e8" stroke-width="1"/>
               </pattern>
               <pattern id="road" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
                 <rect width="24" height="24" fill="#dfe6e9"/>
@@ -362,23 +373,15 @@
             <rect x="0" y="312" width="250" height="96" rx="4" fill="url(#road)" stroke="#bdc8ce"/>
             <rect x="950" y="312" width="250" height="96" rx="4" fill="url(#road)" stroke="#bdc8ce"/>
 
+            <g aria-label="Bridge abutments">
+              <polygon points="100,290 250,290 250,408 20,408" fill="#c9b99f" stroke="#17212b" stroke-width="3"/>
+              <polygon points="1100,290 950,290 950,408 1180,408" fill="#c9b99f" stroke="#17212b" stroke-width="3"/>
+            </g>
+
             <rect x="100" y="290" width="1000" height="12" rx="4" fill="#9a7b57"/>
             <rect x="100" y="302" width="1000" height="6" fill="#bd9d76"/>
 
-            <g fill="#fff" stroke="#17212b" stroke-width="3">
-              <circle cx="100" cy="290" r="9"/>
-              <circle cx="266" cy="290" r="7"/>
-              <circle cx="433" cy="290" r="7"/>
-              <circle cx="600" cy="290" r="7"/>
-              <circle cx="767" cy="290" r="7"/>
-              <circle cx="934" cy="290" r="7"/>
-              <circle cx="1100" cy="290" r="9"/>
-              <circle cx="350" cy="180" r="8"/>
-              <circle cx="600" cy="120" r="8"/>
-              <circle cx="850" cy="180" r="8"/>
-            </g>
-
-            <g stroke="#8a5a36" stroke-width="10" stroke-linecap="round">
+            <g id="memberLines" stroke="#8a5a36" stroke-width="10" stroke-linecap="round" data-members>
               <line x1="100" y1="290" x2="350" y2="180"/>
               <line x1="350" y1="180" x2="600" y2="120"/>
               <line x1="600" y1="120" x2="850" y2="180"/>
@@ -396,6 +399,19 @@
               <path d="M1100 290 L1072 318 L1128 318 Z"/>
             </g>
 
+            <g id="jointCircles" fill="#fff" stroke="#17212b" stroke-width="3" aria-label="Bridge joints">
+              <circle data-fixed="pin" cx="100" cy="290" r="9"/>
+              <circle data-deck="true" cx="266" cy="290" r="7"/>
+              <circle data-deck="true" cx="433" cy="290" r="7"/>
+              <circle data-deck="true" cx="600" cy="290" r="7"/>
+              <circle data-deck="true" cx="767" cy="290" r="7"/>
+              <circle data-deck="true" cx="934" cy="290" r="7"/>
+              <circle data-fixed="roller" cx="1100" cy="290" r="9"/>
+              <circle cx="350" cy="180" r="8"/>
+              <circle cx="600" cy="120" r="8"/>
+              <circle cx="850" cy="180" r="8"/>
+            </g>
+
             <g fill="#61717f" font-size="14" text-anchor="middle">
               <text x="100" y="350">0 ft</text>
               <text x="266" y="350">10 ft</text>
@@ -406,11 +422,18 @@
               <text x="1100" y="350">60 ft</text>
             </g>
 
-            <g>
-              <rect x="690" y="250" width="118" height="42" rx="6" fill="#f1d44d" stroke="#17212b"/>
-              <circle cx="728" cy="292" r="10" fill="#17212b"/>
-              <circle cx="770" cy="292" r="10" fill="#17212b"/>
-              <rect x="704" y="258" width="90" height="8" rx="4" fill="#285c87"/>
+            <g id="previewVehicle" aria-label="Side view car">
+              <path d="M684 276 L706 276 L725 252 L773 252 L794 276 L808 276 L818 288 L818 292 L678 292 L678 284 Z"
+                    fill="#d9b72c" stroke="#17212b" stroke-width="3" stroke-linejoin="round"/>
+              <path d="M724 256 L709 276 L746 276 L746 256 Z" fill="#a9cad4" stroke="#17212b" stroke-width="2"/>
+              <path d="M750 256 L750 276 L789 276 L770 256 Z" fill="#a9cad4" stroke="#17212b" stroke-width="2"/>
+              <rect x="680" y="282" width="136" height="12" rx="5" fill="#d9b72c" stroke="#17212b" stroke-width="3"/>
+              <circle cx="716" cy="292" r="13" fill="#17212b"/>
+              <circle cx="716" cy="292" r="6" fill="#eef2f4"/>
+              <circle cx="780" cy="292" r="13" fill="#17212b"/>
+              <circle cx="780" cy="292" r="6" fill="#eef2f4"/>
+              <rect x="808" y="282" width="10" height="7" rx="3" fill="#e66f4a" stroke="#17212b" stroke-width="1"/>
+              <rect x="680" y="282" width="7" height="7" rx="2" fill="#fff4b0" stroke="#17212b" stroke-width="1"/>
             </g>
           </svg>
         </div>
@@ -463,5 +486,191 @@
       <button class="details-toggle" type="button" aria-expanded="false">Open details</button>
     </section>
   </main>
+  <script>
+    const svg = document.querySelector(".canvas svg");
+    const jointCircles = document.querySelector("#jointCircles");
+    const memberLines = document.querySelector("#memberLines");
+    const hint = document.querySelector(".hint");
+    const toolButtons = [...document.querySelectorAll(".tool")];
+    let activeTool = "add-member";
+    let firstMemberPoint = null;
+    const originX = 100;
+    const originY = 290;
+    const feetPerSvgX = 1000 / 60;
+    const svgPerFootY = 7.2;
+
+    function snapToFootGrid(clientX, clientY) {
+      const bounds = svg.getBoundingClientRect();
+      const svgX = (clientX - bounds.left) * 1200 / bounds.width;
+      const svgY = (clientY - bounds.top) * 500 / bounds.height;
+      const footX = Math.round((svgX - originX) / feetPerSvgX);
+      const footY = Math.round((originY - svgY) / svgPerFootY);
+
+      if (footX < 0 || footX > 60 || footY < 0 || footY > 25) {
+        return null;
+      }
+
+      return {
+        footX,
+        footY,
+        svgX: originX + footX * feetPerSvgX,
+        svgY: originY - footY * svgPerFootY
+      };
+    }
+
+    function setActiveTool(tool) {
+      activeTool = tool;
+      firstMemberPoint = null;
+      toolButtons.forEach((button) => button.classList.remove("active"));
+      document.querySelector(`#${tool}`).classList.add("active");
+    }
+
+    function findOrAddJoint(point) {
+      const existing = [...jointCircles.querySelectorAll("circle")].find((circle) => {
+        return Math.abs(Number(circle.getAttribute("cx")) - point.svgX) < 1
+          && Math.abs(Number(circle.getAttribute("cy")) - point.svgY) < 1;
+      });
+      if (existing) {
+        return existing;
+      }
+
+      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute("cx", point.svgX);
+      circle.setAttribute("cy", point.svgY);
+      circle.setAttribute("r", "8");
+      circle.setAttribute("fill", "#fff");
+      circle.setAttribute("stroke", "#17212b");
+      circle.setAttribute("stroke-width", "3");
+      circle.dataset.memberJoint = "true";
+      jointCircles.appendChild(circle);
+      return circle;
+    }
+
+    function removeOrphanMemberJoints() {
+      [...jointCircles.querySelectorAll("circle[data-member-joint='true']")].forEach((circle) => {
+        const cx = Number(circle.getAttribute("cx"));
+        const cy = Number(circle.getAttribute("cy"));
+        const used = [...memberLines.querySelectorAll("line")].some((line) => {
+          return (Math.abs(Number(line.getAttribute("x1")) - cx) < 1
+            && Math.abs(Number(line.getAttribute("y1")) - cy) < 1)
+            || (Math.abs(Number(line.getAttribute("x2")) - cx) < 1
+            && Math.abs(Number(line.getAttribute("y2")) - cy) < 1);
+        });
+        if (!used) {
+          circle.remove();
+        }
+      });
+    }
+
+    document.querySelector("#addMemberTool").addEventListener("click", () => {
+      setActiveTool("addMemberTool");
+      hint.textContent = "Add Member: click the first endpoint, then the second endpoint.";
+    });
+    document.querySelector("#eraseMemberTool").addEventListener("click", () => {
+      setActiveTool("eraseMemberTool");
+      hint.textContent = "Erase Member: click a member to delete it.";
+    });
+    document.querySelector("#dragJointTool").addEventListener("click", () => {
+      setActiveTool("dragJointTool");
+      hint.textContent = "Drag Joint: joint dragging is not active in the Stage 1 mockup.";
+    });
+    document.querySelector("#clearBridgeTool").addEventListener("click", () => {
+      memberLines.replaceChildren();
+      [...jointCircles.querySelectorAll("circle")].forEach((circle) => {
+        if (!circle.hasAttribute("data-fixed") && !circle.hasAttribute("data-deck")) {
+          circle.remove();
+        }
+      });
+      firstMemberPoint = null;
+      setActiveTool("addMemberTool");
+      hint.textContent = "Bridge cleared. The deck joints and supports are unchanged.";
+    });
+
+    svg.addEventListener("click", (event) => {
+      if (event.target.closest("#previewVehicle")) {
+        return;
+      }
+
+      if (activeTool === "erase-member") {
+        const line = event.target.closest("line");
+        if (line && memberLines.contains(line)) {
+          line.remove();
+          removeOrphanMemberJoints();
+          hint.textContent = "Member erased.";
+        } else {
+          hint.textContent = "Click a member to erase it.";
+        }
+        return;
+      }
+
+      if (activeTool === "eraseMemberTool") {
+        const line = event.target.closest("line");
+        if (line && memberLines.contains(line)) {
+          line.remove();
+          removeOrphanMemberJoints();
+          hint.textContent = "Member erased.";
+        } else {
+          hint.textContent = "Click a member to erase it.";
+        }
+        return;
+      }
+
+      if (activeTool !== "addMemberTool") {
+        return;
+      }
+
+      const point = snapToFootGrid(event.clientX, event.clientY);
+      if (!point) {
+        hint.textContent = "Joint placement is limited to the 60 ft by 25 ft grid.";
+        return;
+      }
+
+      if (point.footY === 0 && point.footX !== 0 && point.footX !== 60 && point.footX % 10 !== 0) {
+        hint.textContent = "Deck joints may only be placed at 10 ft intervals.";
+        return;
+      }
+
+      if (!firstMemberPoint) {
+        firstMemberPoint = point;
+        hint.textContent = `First endpoint set at x = ${point.footX} ft, y = ${point.footY} ft. Choose the second endpoint.`;
+        return;
+      }
+
+      if (Math.abs(firstMemberPoint.svgX - point.svgX) < 1
+        && Math.abs(firstMemberPoint.svgY - point.svgY) < 1) {
+        hint.textContent = "A member needs two distinct endpoints.";
+        firstMemberPoint = null;
+        return;
+      }
+
+      const duplicate = [...memberLines.querySelectorAll("line")].some((line) => {
+        const a = [Number(line.getAttribute("x1")), Number(line.getAttribute("y1"))];
+        const b = [Number(line.getAttribute("x2")), Number(line.getAttribute("y2"))];
+        const p1 = [firstMemberPoint.svgX, firstMemberPoint.svgY];
+        const p2 = [point.svgX, point.svgY];
+        return (a[0] === p1[0] && a[1] === p1[1] && b[0] === p2[0] && b[1] === p2[1])
+          || (b[0] === p1[0] && b[1] === p1[1] && a[0] === p2[0] && a[1] === p2[1]);
+      });
+      if (duplicate) {
+        hint.textContent = "A member already exists between those joints.";
+        firstMemberPoint = null;
+        return;
+      }
+
+      findOrAddJoint(firstMemberPoint);
+      findOrAddJoint(point);
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", firstMemberPoint.svgX);
+      line.setAttribute("y1", firstMemberPoint.svgY);
+      line.setAttribute("x2", point.svgX);
+      line.setAttribute("y2", point.svgY);
+      line.setAttribute("stroke", "#8a5a36");
+      line.setAttribute("stroke-width", "10");
+      line.setAttribute("stroke-linecap", "round");
+      memberLines.appendChild(line);
+      hint.textContent = `Member added with joints at both endpoints: (${firstMemberPoint.footX}, ${firstMemberPoint.footY}) and (${point.footX}, ${point.footY}).`;
+      firstMemberPoint = null;
+    });
+  </script>
 </body>
 </html>

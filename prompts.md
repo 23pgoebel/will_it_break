@@ -28,6 +28,14 @@
 - **Changes:** Replaced the empty `index.html` with a responsive engineering-dashboard mockup containing the 60 ft grid, deck and supports, build tools, status panel, Test mode controls, vehicle preview, and closed details panel.
 - **Worked:** Yes. The mockup is in `index.html`, serves successfully over a local HTTP server, has no diff whitespace errors, and includes responsive desktop and narrow-screen layouts.
 
+- **Request:** Refine the Stage 1 mockup by placing joints above members, changing the support blocks, improving the vehicle, darkening grid lines, and verifying 1 ft joint placement snapping.
+- **Changes:** Reordered SVG joints after members, added sloping abutments beneath pin and roller supports, replaced the preview vehicle with a realistic side-view car, darkened 1 ft grid lines, and added click snapping to integer horizontal and vertical foot coordinates with deck-joint restrictions.
+- **Worked:** Yes. The refined page serves correctly, the 1 ft snapping values and deck restrictions are present, and the diff passes whitespace checks.
+
 - **Request:** Confirm that repository changes should be committed automatically when the user says to start building a stage of the app.
 - **Changes:** Recorded the workflow preference to commit completed changes for each app-building stage unless the user explicitly says not to.
 - **Worked:** Yes. Future stage-building requests will trigger a commit after verification.
+
+- **Request:** Remove the Place Joint button, add pink and black tool icons, and make members create and merge joints automatically.
+- **Changes:** Removed the Place Joint control, added an inline pink eraser icon and black trash-can icon, and implemented member endpoint joints, duplicate-joint merging, duplicate-member prevention, member erasing, and bridge clearing in the mockup.
+- **Worked:** Yes. The updated page serves correctly and the final diff passes whitespace checks.
