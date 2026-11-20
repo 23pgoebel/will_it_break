@@ -167,3 +167,7 @@
 - **Request:** Add the app's validation results beneath the Validation section in `spec.md`.
 - **Changes:** Added the 44 ft Semi reactions and the 20–30 ft top chord, bottom chord, and diagonal forces, including tension/compression signs and the reaction equilibrium check.
 - **Worked:** Yes. The app validation results are now documented in `spec.md`.
+
+- **Request:** Make the web app available at a public URL.
+- **Changes:** Pushed the repository to GitHub, enabled GitHub Pages on the public `main` branch, and verified the Pages build and public HTTP response.
+- **Worked:** Yes. GitHub Pages reports a successful build and serves `https://23pgoebel.github.io/will_it_break/` with HTTP 200.
