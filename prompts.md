@@ -91,3 +91,7 @@
 - **Request:** Fix the buttons and the diagonal truss directions.
 - **Changes:** Removed a duplicate JavaScript `visual` declaration that blocked button handlers, verified Build/Test, Park/Solve, and Pause in the browser, and corrected the six diagonal web endpoints to the Pratt alternating pattern.
 - **Worked:** Yes. Browser testing confirms the buttons respond and the page loads without the prior page script error.
+
+- **Request:** Make the two middle diagonal trusses match the second and fifth trusses.
+- **Changes:** Changed the third diagonal to match the second panel and the fourth diagonal to match the fifth panel.
+- **Worked:** Yes. The served SVG confirms panels 3 and 4 match panels 2 and 5, and the diff passes whitespace checks.
