@@ -20,6 +20,10 @@
 - **Changes:** No code or specification changes; prepared a staged build overview for the response.
 - **Worked:** Yes. The prompt was answered using the full specification.
 
+- **Request:** Add the app overview near the top of `spec.md` and add the five build stages at the bottom under `## Build stages`.
+- **Changes:** Added the overview after the title and added five implementation stages with build tasks and completion checks; logged the request in `prompts.md`.
+- **Worked:** Yes. The overview and build stages are now in `spec.md`.
+
 - **Request:** Confirm that repository changes should be committed automatically when the user says to start building a stage of the app.
 - **Changes:** Recorded the workflow preference to commit completed changes for each app-building stage unless the user explicitly says not to.
 - **Worked:** Yes. Future stage-building requests will trigger a commit after verification.

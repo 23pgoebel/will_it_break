@@ -1,5 +1,11 @@
 # Will it Break?
 
+## Overview
+- “Will it Break?” is a 2D bridge-design simulator on a 60 ft by 25 ft grid.
+- Users place joints and members in Build mode, view the live bridge cost and stability status, and use Test mode to drive or park one of four vehicles across the bridge.
+- The app distributes axle loads to deck joints, solves the truss, and updates member colors from brown through yellow and red to black as a member approaches or exceeds its tension or compression capacity.
+- It includes a closed-by-default details panel for reactions and signed member forces, a failure state that preserves the bridge and offers Restart, and a success state that allows another vehicle to be tested.
+
 ## Purpose
 - The app will allow users to design and build a a cost effective 2D virtual bridge and drive various vehicles across it. The app will show the cost of the bridge, the stress in each member through color as the vehicles drive across, and a message if the bridge exceeds the allowable stresses.
 
@@ -67,3 +73,25 @@ The answer should be:
 - The app will not have any 3D elements
 - Members are all made of the same material, no options to change thickness or strength of members will be added
 - The app will only contain the test mode and build mode. No other modes will exist.
+
+## Build stages
+
+### 1. Page-layout mockup
+- Build a static HTML/CSS mockup of the grid, deck joints, pin and roller supports, road sections, tool panel, cost/status panel, details drawer, and Test mode controls.
+- Check that the layout is readable, the main grid is prominent, smaller screens remain usable, and controls are clearly separated from the canvas.
+
+### 2. Build-mode editing
+- Build joint placement, member drawing, member erasing, whole-bridge clearing, joint dragging, cursor hints, duplicate-member prevention, proposed-member length hints, live cost, joint/member counts, and stability status.
+- Check that joints are allowed only on valid intersections, deck placement follows the 10 ft deck rules, edits update immediately, fixed supports cannot move or delete, and all controls provide keyboard alternatives.
+
+### 3. Truss and stability calculations
+- Build axle-load distribution, support reactions, the method-of-joints linear solver, stability and singularity detection, signed tension/compression forces, and 0.5 ft load-envelope calculations.
+- Check that invalid bridges return a clear instability message, member forces use positive for tension and negative for compression, and the Pratt-truss semi validation matches the specified reactions and member-force targets.
+
+### 4. Test-mode interaction
+- Build the vehicle selector, front-axle position control, Park, Drive Across, and Pause/Resume controls. Add 2D vehicle animation and the brown-to-yellow-to-red-to-black member stress colors.
+- Check that vehicle axle positions are constrained and represented every 0.5 ft, movement is readable, member forces are not shown on the bridge or beside members, and the vehicle stops immediately on failure.
+
+### 5. Results, details, and restart flow
+- Build the closed-by-default details panel, separate reaction and member force tables, failure banner, success state, Restart control, and Drive Another Vehicle option.
+- Check that tables show signed forces in pounds without peak utilization or peak-position data, successful crossings offer another vehicle, and Restart returns to Build mode while preserving the bridge.
