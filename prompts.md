@@ -95,3 +95,7 @@
 - **Request:** Make the two middle diagonal trusses match the second and fifth trusses.
 - **Changes:** Changed the third diagonal to match the second panel and the fourth diagonal to match the fifth panel.
 - **Worked:** Yes. The served SVG confirms panels 3 and 4 match panels 2 and 5, and the diff passes whitespace checks.
+
+- **Request:** Fix incorrect joint and member counts after clearing the bridge.
+- **Changes:** Changed status totals to count every SVG joint and member, including the seven deck joints and six permanent deck members.
+- **Worked:** Yes. Browser verification confirmed 12 joints and 21 members initially, 7 joints and 6 members after clear, and restoration after Undo.

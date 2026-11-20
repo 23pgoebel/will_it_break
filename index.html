@@ -551,12 +551,12 @@
           <span class="stat-value" id="bridgeCost">$2,500</span>
         </div>
         <div class="stat">
-          <span class="stat-label">Structural joints</span>
-          <span class="stat-value" id="jointCount">3</span>
+          <span class="stat-label">Joints</span>
+          <span class="stat-value" id="jointCount">12</span>
         </div>
         <div class="stat">
           <span class="stat-label">Members</span>
-          <span class="stat-value" id="memberCount">10</span>
+          <span class="stat-value" id="memberCount">21</span>
         </div>
         <div class="stat">
           <span class="stat-label">Stability</span>
@@ -663,8 +663,6 @@
       });
 
       const cost = structuralJoints.length * 500 + memberCost;
-      const jointCount = structuralJoints.length;
-      const memberCount = structuralMembers.length;
       const jointTotal = joints.length;
       const memberTotal = lines.length;
       let stability = "Incomplete";
@@ -694,8 +692,8 @@
 
       document.querySelector("#bridgeCost").textContent =
         `$${Math.round(cost).toLocaleString("en-US")}`;
-      document.querySelector("#jointCount").textContent = jointCount;
-      document.querySelector("#memberCount").textContent = memberCount;
+      document.querySelector("#jointCount").textContent = jointTotal;
+      document.querySelector("#memberCount").textContent = memberTotal;
       document.querySelector("#stabilityStatus").textContent = stability;
       document.querySelector("#stabilityStatus").className =
         `stat-value ${stabilityClass}`.trim();
