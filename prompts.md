@@ -127,3 +127,7 @@
 - **Request:** Keep members brown until stress exceeds half of allowable tension or compression capacity.
 - **Changes:** Updated structural and deck member coloring so 45,000 lb tension or 37,500 lb compression is the first color-transition threshold.
 - **Worked:** Yes. Browser verification showed all members brown at the 44 ft semi position because no absolute force exceeded 50 percent of the applicable capacity.
+
+- **Request:** Verify method-of-joints truss stresses and tension/compression signs.
+- **Changes:** Corrected the nodal-load RHS sign in the equilibrium matrix so downward loads produce upward reactions and tension remains positive/compression negative; documented the convention.
+- **Worked:** Browser verification at the semi’s x = 44 ft position produced upward pin and roller reactions of 3,200 lb and 36,800 lb, totaling 40,000 lb. Member forces included positive tension and negative compression values, confirming the method-of-joints sign convention.

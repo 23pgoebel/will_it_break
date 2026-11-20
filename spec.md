@@ -42,6 +42,7 @@
     - Member capacities of 90,000 lb in tension and 75,000 lb in compression. In Test mode, members are colored by how close they are to capacity.
 - Cost is calculated by multiplying the total number of joints, including the seven bridge-deck joints and supports, by $500, and the total length of all members, including the six bridge-deck members, by $100, then summing the two products.
 - Member forces use positive values for tension and negative values for compression.
+- Member forces are solved with the method of joints using axial force equilibrium at every joint. Positive member forces are tension; negative member forces are compression.
 - Axle loads are calculated every 0.5 ft of vehicle travel and from axle loads only; bridge weight and vehicle weight beyond the listed axle loads are not included.
 
 ## Outputs

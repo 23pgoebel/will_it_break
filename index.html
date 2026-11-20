@@ -1143,7 +1143,7 @@
       nodalLoads.forEach((load, circle) => {
         const index = nodeIndex.get(circle);
         if (index !== undefined) {
-          rhs[index * 2 + 1] -= load;
+          rhs[index * 2 + 1] += load;
         }
       });
 
