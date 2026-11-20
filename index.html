@@ -1541,22 +1541,54 @@
         hint.textContent = "Switch to Test mode before driving.";
         return;
       }
-      testFrontX = Number(document.querySelector("#frontAxlePosition").value);
-      if (!Number.isFinite(testFrontX)) {
-        testFrontX = 44;
-      }
-      testFrontX = Math.max(0, Math.min(60, testFrontX));
+
+      testFrontX = 0;
       setTestVehicle(testFrontX);
-      document.querySelector("#pauseButton").disabled = true;
+      document.querySelector("#pauseButton").disabled = false;
       document.querySelector("#pauseButton").textContent = "Pause";
-      const result = solveTruss(testFrontX);
-      renderSolverResult(result);
-      if (result.stable) {
+      hint.textContent = "Vehicle is driving across the bridge.";
+
+      driveTimer = window.setInterval(() => {
+        if (drivePaused) {
+          return;
+        }
+
+        const crossingVehicle = VEHICLE_VISUAL[document.querySelector("#vehicleSelect").value];
+        const rearAxleOffset = crossingVehicle.offsets[crossingVehicle.offsets.length - 1];
+        const finalFrontPosition = 60 - rearAxleOffset;
+        testFrontX = Math.min(finalFrontPosition, testFrontX + 0.5);
+        setTestVehicle(testFrontX);
+
+        const result = solveTruss(testFrontX);
+        if (!result.stable) {
+          stopDrive();
+          renderSolverResult(result);
+          hint.textContent = result.message;
+          return;
+        }
+
+        renderSolverResult(result);
         applyMemberColors(result.memberForces);
-        hint.textContent = `Vehicle remains parked at front axle x = ${testFrontX} ft.`;
-      } else {
-        hint.textContent = result.message;
-      }
+
+        const failedMemberIndex = result.memberForces.findIndex((force) => {
+          const capacity = force >= 0 ? 90000 : 75000;
+          return Math.abs(force) / capacity > 1;
+        });
+
+        if (failedMemberIndex >= 0) {
+          const failedLine = result.lines[failedMemberIndex];
+          if (failedLine) {
+            failedLine.setAttribute("stroke", "#111");
+          }
+          showFailure(failedMemberIndex);
+          return;
+        }
+
+        const rearAxlePosition = testFrontX + rearAxleOffset;
+        if (rearAxlePosition >= 60) {
+          showSuccess(document.querySelector("#vehicleSelect").value);
+        }
+      }, 120);
     });
 
     document.querySelector("#restartButton").addEventListener("click", () => {

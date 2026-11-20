@@ -159,3 +159,7 @@
 - **Request:** Keep the wheels visible but make the vehicle bodies invisible and remove their animation.
 - **Changes:** Hid the body, windows, and detail groups, retained the generated wheel circles, and replaced timed crossing with a parked solve at the selected front axle.
 - **Worked:** Yes. Browser verification showed body/windows/detail opacity 0, 6 visible semi wheels, no duplicate detail groups, no runtime errors, and no timed Drive Across loop.
+
+- **Request:** Restore vehicle movement in Test mode while keeping bodies invisible.
+- **Changes:** Restored the 0.5 ft timed Drive Across loop, Pause/Resume behavior, rear-axle crossing completion, and failure/success handling with only wheel circles visible.
+- **Worked:** Yes. Browser verification showed the semi move from 2.5 ft to 6 ft, retain 6 visible wheels, and Pause change to Resume.
