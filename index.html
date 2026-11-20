@@ -794,6 +794,21 @@
       updateBridgeStatus();
     });
 
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || activeTool !== "addMemberTool") {
+        return;
+      }
+
+      if (firstMemberPoint) {
+        firstMemberPoint = null;
+        memberOutline.setAttribute("opacity", "0");
+        hint.textContent = "Member placement detached. Choose a new first joint.";
+      } else {
+        hint.textContent = "Choose a first joint for the new member.";
+      }
+      event.preventDefault();
+    });
+
     svg.addEventListener("click", (event) => {
       if (suppressSvgClick) {
         suppressSvgClick = false;
@@ -839,7 +854,11 @@
         return;
       }
 
-      if (point.footY === 0 && point.footX !== 0 && point.footX !== 60 && point.footX % 10 !== 0) {
+      if (point.footY === 0
+        && !point.snappedToJoint
+        && point.footX !== 0
+        && point.footX !== 60
+        && point.footX % 10 !== 0) {
         hint.textContent = "Deck joints may only be placed at 10 ft intervals.";
         return;
       }

@@ -55,3 +55,7 @@
 - **Request:** Build Stage 2, the functional Build-mode editing experience.
 - **Changes:** Added live cost, structural joint/member counts, and stability status; enabled structural joint dragging, 1 ft snapping, 2 ft duplicate-joint merging, member-chain placement, live outlines, member erasing, orphan-joint cleanup, and bridge clearing while preserving fixed and deck joints.
 - **Worked:** Yes. The Stage 2 page is served successfully, contains the editing controls and live status elements, and passes diff whitespace validation.
+
+- **Request:** Fix member attachment to the bridge deck and make Escape detach partially placed members from the chained joint.
+- **Changes:** Allowed snapped existing deck joints as member endpoints while retaining 10 ft rules for new deck joints, and added an Escape-key handler that clears the current first endpoint and member outline.
+- **Worked:** Yes. The served page contains the deck snap rule and Escape reset behavior, and the diff passes whitespace checks.
