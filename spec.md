@@ -44,8 +44,16 @@
 - All controls and status messages have keyboard-accessible alternatives, visible focus states, and text descriptions for screen readers.
 
 ## Look and feel
-- App will open to the 60x25ft grid with the bridge deck and joints every 10ft already showing. It will be in build mode. There will be a road on either side of the bridge deck. This will all be 2D with images of the vehicles being 2D from the side, showing 2 wheels. Images of the vehicles will be to scale if possible. Members will look like brown wood when they are withing a safety factor of 2. They will then start turning yellow all the way to bright red when they are near the point of failure. Once the member exceeds the allowable stress, it will turn black, the vehicle will stop, and a message will appear that says "Your Bridge Failed". There will be a button below the message that says "Restart" that will return the user to the build screen where their previous bridge will still be intact.
-- Include a little white circle with a black outline where each joint has been placed.
+- The app opens in Build mode with the 60 ft by 25 ft grid, bridge deck, 10 ft deck joints, pin support, roller support, and roads on both sides already displayed. The interface is a clean engineering dashboard with the grid in the center, build tools in a compact left panel, cost and status readouts in a right panel, and the details panel below or in a drawer.
+- The grid uses light lines, while deck lines, supports, joints, and members use stronger, clearly different lines.
+- Build tools use consistent icons paired with text labels or tooltips. The cursor and selected tool visibly indicate placement, member connection, erasing, or joint dragging.
+- Normal joints appear as small white circles with black outlines. Fixed supports have distinct pin and roller markers. Hovered or selected joints use a clearly visible highlight.
+- Members look like brown wood when they have a safety factor of at least 2. They transition from yellow through bright red as they approach their applicable tension or compression capacity. A member turns black after it exceeds capacity.
+- The 2D side-view vehicles show two wheels and use scaled dimensions and proportional axle spacing when possible.
+- Vehicle motion is smooth and readable. Test mode provides visible Pause/Resume and Park controls.
+- Success and failure states use clear banners or dialogs with restrained animation. Failure includes "Your Bridge Failed", the failed member, and a Restart button that returns to Build mode while preserving the bridge.
+- The layout keeps the grid responsive and scales the canvas on smaller screens while preserving accessible controls and status readouts.
+- Normal status hints are brief and unobtrusive. Controls and status messages do not rely on color alone, have keyboard alternatives, visible focus states, and text descriptions for screen readers.
 
 ## Validation
 - Build a 60 ft Pratt truss, 10 ft tall, with six 10 ft panels and diagonals sloping down toward the center. Park the semi with its front axle at x = 44 ft, compute the reactions by hand, and use the method of sections to compute the forces in the top chord, bottom chord, and diagonal in the panel from x = 20 to 30. 
