@@ -14,6 +14,14 @@
     Semi (AASHTO HS20 design truck)	8,000 at 0 ft; 32,000 at 14 ft; 32,000 at 28 ft
     Fire engine	20,000 at 0 ft; 27,000 at 17 ft; 27,000 at 21.5 ft
 - Include tools to build the bridge including an eraser to click on a member to delete it, an option build with the members, a button to erase the whole bridge, the ability to drag joints to new intersections on the bridge.
+- Add a vehicle dropdown for Car, Loaded Dump Truck, Semi, and Fire Engine.
+- Add a numeric front-axle position field with a synchronized slider or step buttons.
+- Constrain x to the bridge length and account for axle positions that fall outside the 60 ft span.
+- Add Park, Drive Across, and Pause/Resume controls.
+- Connect each member between two joints and prevent duplicate members.
+- Show existing and proposed member lengths in the hint/status area.
+- Use click-to-place on allowed intersections and show a live cursor hint.
+- Disable placement on the roadway/deck except at the fixed 10 ft deck joints
 
 ## Calculations
 - A truss solver using the method of joints as one linear system, with a message instead of numbers when the truss is unstable (it needs members + 3 = 2 × joints, and a system that isn't nearly singular)
