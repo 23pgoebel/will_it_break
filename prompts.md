@@ -119,3 +119,7 @@
 - **Request:** Show yellow-to-red for compression and green-to-blue for tension, including tension on deck members.
 - **Changes:** Updated member capacity colors for structural and deck members, with black retained for exceeded capacity.
 - **Worked:** Yes. Browser verification confirmed deck compression and structural tension/compression colors, and the diff passes whitespace checks.
+
+- **Request:** Fix the cost after clearing by including bridge-deck joints and members.
+- **Changes:** Updated the live cost formula to charge all joints at $500 each and all member feet at $100 per foot, including deck elements.
+- **Worked:** Yes. The formula includes seven deck joints and 60 ft of deck members, producing $9,500 for a cleared bridge. Browser page verification also showed the opening bridge cost as $29,493.

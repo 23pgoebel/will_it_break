@@ -586,7 +586,7 @@
         <h2 class="panel-title">Bridge status</h2>
         <div class="stat">
           <span class="stat-label">Cost</span>
-          <span class="stat-value" id="bridgeCost">$2,500</span>
+          <span class="stat-value" id="bridgeCost">$9,500</span>
         </div>
         <div class="stat">
           <span class="stat-label">Joints</span>
@@ -705,13 +705,13 @@
       });
 
       let memberCost = 0;
-      structuralMembers.forEach((line) => {
+      lines.forEach((line) => {
         const dxFeet = Math.abs(Number(line.getAttribute("x2")) - Number(line.getAttribute("x1"))) / feetPerSvgX;
         const dyFeet = Math.abs(Number(line.getAttribute("y2")) - Number(line.getAttribute("y1"))) / svgPerFootY;
         memberCost += Math.hypot(dxFeet, dyFeet) * 100;
       });
 
-      const cost = structuralJoints.length * 500 + memberCost;
+      const cost = joints.length * 500 + memberCost;
       const jointTotal = joints.length;
       const memberTotal = lines.length;
       let stability = "Incomplete";

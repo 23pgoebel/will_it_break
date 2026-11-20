@@ -40,7 +40,7 @@
 ## Calculations
 - A truss solver using the method of joints as one linear system, with a message instead of numbers when the truss is unstable (it needs members + 3 = 2 × joints, and a system that isn't nearly singular)
     - Member capacities of 90,000 lb in tension and 75,000 lb in compression. In Test mode, members are colored by how close they are to capacity.
-- Cost is calculated by multiplying the number of user-added structural joints outside the deck by $500, and the total ft of user-added structural members outside the deck by $100, then summing the two products. The deck joints, support joints, and deck members do not count toward the cost.
+- Cost is calculated by multiplying the total number of joints, including the seven bridge-deck joints and supports, by $500, and the total length of all members, including the six bridge-deck members, by $100, then summing the two products.
 - Member forces use positive values for tension and negative values for compression.
 - Axle loads are calculated every 0.5 ft of vehicle travel and from axle loads only; bridge weight and vehicle weight beyond the listed axle loads are not included.
 
