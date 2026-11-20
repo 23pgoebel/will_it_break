@@ -75,3 +75,7 @@
 - **Request:** Build Stage 4, the Test-mode vehicle interaction stage.
 - **Changes:** Added Build/Test mode switching, four selectable 2D vehicles, front-axle position control, Park/Solve, Drive Across, Pause/Resume, 0.5 ft crossing calculations, live capacity colors, failure stopping, and safe-crossing status. Member forces remain in the details panel rather than on the bridge.
 - **Worked:** Yes. The Stage 4 controls and 0.5 ft animation logic are served successfully and the diff passes whitespace validation.
+
+- **Request:** Complete rear-axle crossing, add Build Undo, and make each vehicle visually recognizable.
+- **Changes:** Added rear-axle crossing completion, undo snapshots for bridge edits, and distinct SVG shapes for a car, loaded dump truck, semi tractor-trailer, and fire engine.
+- **Worked:** Yes. The served page contains rear-axle completion, Undo, and vehicle-specific SVG rendering; the diff passes whitespace validation.

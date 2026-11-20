@@ -426,6 +426,13 @@
             </svg>
             Clear Bridge
           </button>
+          <button class="tool" id="undoButton" type="button" aria-label="Undo last bridge edit">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" style="vertical-align:-4px;margin-right:5px">
+              <path d="M7 4 3 7.5 7 11" fill="none" stroke="#285c87" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 7.5h7a4 4 0 0 1 0 8" fill="none" stroke="#285c87" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Undo
+          </button>
         </div>
       </aside>
 
@@ -711,16 +718,63 @@
     };
 
     const VEHICLE_VISUAL = {
-      "Car": { color: "#d9b72c", offsets: [0, -10], width: 160, label: "Car" },
-      "Loaded Dump Truck": { color: "#bd642f", offsets: [0, -14, -18.5], width: 210, label: "Loaded Dump Truck" },
-      "Semi": { color: "#5e82a6", offsets: [0, -14, -28], width: 230, label: "Semi" },
-      "Fire Engine": { color: "#c74343", offsets: [0, -17, -21.5], width: 220, label: "Fire Engine" }
+      "Car": { color: "#d9b72c", offsets: [0, -10], label: "Car" },
+      "Loaded Dump Truck": { color: "#bd642f", offsets: [0, -14, -18.5], label: "Loaded Dump Truck" },
+      "Semi": { color: "#4e6f93", offsets: [0, -14, -28], label: "Semi" },
+      "Fire Engine": { color: "#c74343", offsets: [0, -17, -21.5], label: "Fire Engine" }
     };
 
     let testFrontX = 44;
     let driveTimer = null;
     let drivePaused = false;
     let isTestMode = false;
+    const undoStack = [];
+
+    function snapshotBridge() {
+      undoStack.push({
+        members: [...memberLines.querySelectorAll("line:not([data-deck-member])")].map((line) => ({
+          x1: line.getAttribute("x1"),
+          y1: line.getAttribute("y1"),
+          x2: line.getAttribute("x2"),
+          y2: line.getAttribute("y2")
+        })),
+        joints: [...jointCircles.querySelectorAll("circle[data-member-joint='true']")].map((circle) => ({
+          cx: circle.getAttribute("cx"),
+          cy: circle.getAttribute("cy")
+        }))
+      });
+      if (undoStack.length > 30) {
+        undoStack.shift();
+      }
+    }
+
+    function restoreBridge(snapshot) {
+      [...memberLines.querySelectorAll("line:not([data-deck-member])")].forEach((line) => line.remove());
+      [...jointCircles.querySelectorAll("circle[data-member-joint='true']")].forEach((circle) => circle.remove());
+
+      snapshot.joints.forEach((position) => {
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", position.cx);
+        circle.setAttribute("cy", position.cy);
+        circle.setAttribute("r", "8");
+        circle.setAttribute("fill", "#fff");
+        circle.setAttribute("stroke", "#17212b");
+        circle.setAttribute("stroke-width", "3");
+        circle.dataset.memberJoint = "true";
+        jointCircles.appendChild(circle);
+      });
+
+      snapshot.members.forEach((position) => {
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        Object.entries(position).forEach(([name, value]) => line.setAttribute(name, value));
+        line.setAttribute("stroke", "#8a5a36");
+        line.setAttribute("stroke-width", "10");
+        line.setAttribute("stroke-linecap", "round");
+        memberLines.appendChild(line);
+      });
+      firstMemberPoint = null;
+      updateBridgeStatus();
+    }
 
     function stopDrive() {
       if (driveTimer) {
@@ -736,10 +790,6 @@
       const vehicleName = document.querySelector("#vehicleSelect").value;
       const visual = VEHICLE_VISUAL[vehicleName];
       const frontWheelX = 100 + frontX * feetPerSvgX;
-      const rearOffset = visual.offsets[visual.offsets.length - 1];
-      const halfWidth = visual.width / 2;
-      const bodyLeft = -Math.max(80, visual.width - 65);
-      const bodyRight = 75;
 
       testFrontX = frontX;
       document.querySelector("#frontAxlePosition").value = frontX;
@@ -747,16 +797,61 @@
       vehicle.setAttribute("transform", `translate(${frontWheelX} 0)`);
       vehicle.setAttribute("opacity", "1");
 
-      document.querySelector("#vehicleBody").setAttribute("d",
-        `M${bodyLeft} 246 L${bodyLeft + 24} 246 L${bodyLeft + 44} 218 L30 218 L52 246 L${bodyRight} 246 L${bodyRight + 12} 258 L${bodyRight + 12} 278 L${bodyLeft} 278 Z`);
-      document.querySelector("#vehicleBody").setAttribute("fill", visual.color);
-      document.querySelector("#vehicleWindows").setAttribute("d",
-        `M${bodyLeft + 44} 222 L16 222 L30 246 L${bodyLeft + 24} 246 Z`);
-
       const wheels = document.querySelector("#vehicleWheels");
       wheels.replaceChildren();
-      const wheelPositions = [0, rearOffset * feetPerSvgX];
-      wheelPositions.forEach((offset) => {
+
+      document.querySelector("#vehicleBody").setAttribute("fill", visual.color);
+      const vehicleDetails = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      vehicleDetails.setAttribute("id", "vehicleDetails");
+      const oldDetails = document.querySelector("#vehicleDetails");
+      if (oldDetails) {
+        oldDetails.remove();
+      }
+
+      let wheelPositions = [0];
+      if (vehicleName === "Car") {
+        document.querySelector("#vehicleBody").setAttribute("d",
+          "M-72 254 L-58 254 L-42 224 L12 218 L48 238 L72 244 L82 254 L82 278 L-82 278 L-82 258 Z");
+        document.querySelector("#vehicleWindows").setAttribute("d",
+          "M-38 228 L8 222 L38 238 L-24 238 Z");
+        vehicleDetails.innerHTML =
+          '<circle cx="-52" cy="252" r="4" fill="#f6d76a"/><rect x="68" y="252" width="10" height="6" rx="2" fill="#b82f32"/>';
+        wheelPositions = [0, -10];
+      } else if (vehicleName === "Loaded Dump Truck") {
+        document.querySelector("#vehicleBody").setAttribute("d",
+          "M-82 278 L-82 252 L-42 252 L-42 238 L58 238 L82 252 L82 278 Z");
+        document.querySelector("#vehicleWindows").setAttribute("d",
+          "M-38 242 L-38 252 L58 252 L58 242 Z");
+        vehicleDetails.innerHTML =
+          '<path d="M-42 238 L-20 218 L48 218 L58 238 Z" fill="#d8a36b" stroke="#17212b" stroke-width="3"/>';
+        wheelPositions = [0, -14, -18.5];
+      } else if (vehicleName === "Semi") {
+        document.querySelector("#vehicleBody").setAttribute("d",
+          "M-96 278 L-96 250 L-18 250 L-18 218 L28 218 L52 250 L52 278 Z M52 278 L52 252 L92 252 L92 278 Z");
+        document.querySelector("#vehicleWindows").setAttribute("d",
+          "M-12 222 L24 222 L40 248 L-12 248 Z");
+        vehicleDetails.innerHTML =
+          '<rect x="-92" y="252" width="142" height="26" rx="2" fill="#e6e9ed" stroke="#17212b" stroke-width="3"/>' +
+          '<path d="M-92 252 H50" stroke="#4e6f93" stroke-width="7"/>';
+        wheelPositions = [0, -14, -28];
+      } else {
+        document.querySelector("#vehicleBody").setAttribute("d",
+          "M-88 278 L-88 248 L-74 224 L-20 224 L-20 238 L68 238 L68 278 Z");
+        document.querySelector("#vehicleWindows").setAttribute("d",
+          "M-68 228 L-24 228 L-24 248 L-80 248 Z");
+        vehicleDetails.innerHTML =
+          '<rect x="-84" y="238" width="148" height="12" fill="#c74343" stroke="#17212b" stroke-width="2"/>' +
+          '<rect x="-38" y="210" width="54" height="14" rx="2" fill="#f4f4f4" stroke="#17212b" stroke-width="2"/>' +
+          '<path d="M-12 210 V198 M-12 198 L20 198" fill="none" stroke="#17212b" stroke-width="5"/>' +
+          '<circle cx="-48" cy="242" r="5" fill="#fff4b0"/><circle cx="52" cy="242" r="5" fill="#fff4b0"/>';
+        wheelPositions = [0, -17, -21.5];
+      }
+
+      vehicleDetails.setAttribute("id", "vehicleDetails");
+      vehicle.appendChild(vehicleDetails);
+
+      wheelPositions.forEach((position) => {
+        const offset = position * feetPerSvgX;
         const outer = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         outer.setAttribute("cx", offset);
         outer.setAttribute("cy", "278");
@@ -1102,6 +1197,7 @@
         return;
       }
       draggedCircle = circle;
+      snapshotBridge();
       suppressSvgClick = true;
       draggedCircle.dataset.lastCx = circle.getAttribute("cx");
       draggedCircle.dataset.lastCy = circle.getAttribute("cy");
@@ -1297,7 +1393,10 @@
           return;
         }
 
-        testFrontX = Math.min(60, testFrontX + 0.5);
+        const visual = VEHICLE_VISUAL[document.querySelector("#vehicleSelect").value];
+        const rearAxleOffset = visual.offsets[visual.offsets.length - 1];
+        const finalFrontPosition = 60 - rearAxleOffset;
+        testFrontX = Math.min(finalFrontPosition, testFrontX + 0.5);
         setTestVehicle(testFrontX);
         const result = solveTruss(testFrontX);
         if (!result.stable) {
@@ -1327,7 +1426,10 @@
           return;
         }
 
-        if (testFrontX >= 60) {
+        const visual = VEHICLE_VISUAL[document.querySelector("#vehicleSelect").value];
+        const rearAxleOffset = visual.offsets[visual.offsets.length - 1];
+        const rearAxlePosition = testFrontX + rearAxleOffset;
+        if (rearAxlePosition >= 60) {
           stopDrive();
           document.querySelector("#stabilityStatus").textContent = "Safe";
           document.querySelector("#stabilityStatus").className = "stat-value safe";
@@ -1336,6 +1438,7 @@
       }, 120);
     });
     document.querySelector("#clearBridgeTool").addEventListener("click", () => {
+      snapshotBridge();
       [...memberLines.querySelectorAll("line")].forEach((line) => {
         if (!line.hasAttribute("data-deck-member")) {
           line.remove();
@@ -1350,6 +1453,16 @@
       setActiveTool("addMemberTool");
       hint.textContent = "Bridge cleared. The deck joints and supports are unchanged.";
       updateBridgeStatus();
+    });
+
+    document.querySelector("#undoButton").addEventListener("click", () => {
+      const snapshot = undoStack.pop();
+      if (!snapshot) {
+        hint.textContent = "Nothing to undo.";
+        return;
+      }
+      restoreBridge(snapshot);
+      hint.textContent = "Last bridge edit undone.";
     });
 
     document.addEventListener("keydown", (event) => {
@@ -1380,6 +1493,7 @@
             hint.textContent = "Deck members cannot be erased.";
             return;
           }
+          snapshotBridge();
           line.remove();
           removeOrphanMemberJoints();
           hint.textContent = "Member erased.";
@@ -1397,6 +1511,7 @@
             hint.textContent = "Deck members cannot be erased.";
             return;
           }
+          snapshotBridge();
           line.remove();
           removeOrphanMemberJoints();
           hint.textContent = "Member erased.";
@@ -1448,6 +1563,7 @@
         return;
       }
 
+      snapshotBridge();
       findOrAddJoint(firstMemberPoint);
       findOrAddJoint(point);
       const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
