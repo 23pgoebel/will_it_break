@@ -68,6 +68,7 @@
 - Members remain brown until their absolute force exceeds 45,000 lb in tension or 37,500 lb in compression (50 percent of the applicable allowable stress).
 - The 2D side-view vehicles show two wheels and use scaled dimensions and proportional axle spacing when possible.
 - Vehicle motion is smooth and readable. Test mode provides visible Pause/Resume and Park controls.
+- Vehicles do not animate across the bridge. The vehicle remains stationary at the selected front-axle position, and a black line connects all of its wheel positions.
 - Success and failure states use clear banners or dialogs with restrained animation. Failure includes "Your Bridge Failed", the failed member, and a Restart button that returns to Build mode while preserving the bridge.
 - The layout keeps the grid responsive and scales the canvas on smaller screens while preserving accessible controls and status readouts.
 - Normal status hints are brief and unobtrusive. Controls and status messages do not rely on color alone, have keyboard alternatives, visible focus states, and text descriptions for screen readers.
@@ -76,9 +77,9 @@
 - Build a 60 ft Pratt truss, 10 ft tall, with six 10 ft panels and diagonals sloping down toward the center. Park the semi with its front axle at x = 44 ft, compute the reactions by hand, and use the method of sections to compute the forces in the top chord, bottom chord, and diagonal in the panel from x = 20 to 30. 
 
 The answer should be:
-- Top Chord: 80,000 lb
-- Bottom Chord: 70,400 lb
-- Diagonal 13,576.45 lb
+- Top Chord: 80,000 lb compression
+- Bottom Chord: 70,400 lb tension
+- Diagonal 13,576.45 lb tension
 
 ## Out of scope
 - The app will not have any 3D elements

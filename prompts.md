@@ -116,6 +116,10 @@
 - **Changes:** Updated the inline SVG artwork for a yellow checked taxi, yellow dump truck with raised dirt bed, blue tractor-trailer, and red ladder fire engine.
 - **Worked:** Yes. Browser verification confirmed all four vehicle selections render and the page has no JavaScript errors.
 
+- **Request:** Remove vehicle animation and connect the wheels with a black line.
+- **Changes:** Removed the timed Drive Across movement loop, retained vehicle placement at the selected front axle, and added a black wheel axle line beneath each set of vehicle wheels.
+- **Worked:** Yes. Browser verification confirms the vehicle remains stationary and the semi has two black axle lines and six wheel circles.
+
 - **Request:** Show yellow-to-red for compression and green-to-blue for tension, including tension on deck members.
 - **Changes:** Updated member capacity colors for structural and deck members, with black retained for exceeded capacity.
 - **Worked:** Yes. Browser verification confirmed deck compression and structural tension/compression colors, and the diff passes whitespace checks.
