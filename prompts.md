@@ -155,3 +155,7 @@
 - **Request:** Undo the code from the last command.
 - **Changes:** Reverted commit `58375e8`, restoring vehicle animation and removing the added wheel axle lines.
 - **Worked:** Yes. The last commit's code changes are reversed and staged for a revert commit.
+
+- **Request:** Keep the wheels visible but make the vehicle bodies invisible and remove their animation.
+- **Changes:** Hid the body, windows, and detail groups, retained the generated wheel circles, and replaced timed crossing with a parked solve at the selected front axle.
+- **Worked:** Yes. Browser verification showed body/windows/detail opacity 0, 6 visible semi wheels, no duplicate detail groups, no runtime errors, and no timed Drive Across loop.

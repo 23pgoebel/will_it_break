@@ -851,6 +851,9 @@
       vehicle.setAttribute("transform", `translate(${frontWheelX} 0)`);
       vehicle.setAttribute("opacity", "1");
 
+      document.querySelector("#vehicleBody").setAttribute("opacity", "0");
+      document.querySelector("#vehicleWindows").setAttribute("opacity", "0");
+
       const wheels = document.querySelector("#vehicleWheels");
       wheels.replaceChildren();
 
@@ -957,6 +960,7 @@
       }
 
       vehicleDetails.setAttribute("id", "vehicleDetails");
+      vehicleDetails.setAttribute("opacity", "0");
       vehicle.appendChild(vehicleDetails);
 
       wheelPositions.forEach((position) => {
@@ -1537,53 +1541,22 @@
         hint.textContent = "Switch to Test mode before driving.";
         return;
       }
-
-      testFrontX = 0;
+      testFrontX = Number(document.querySelector("#frontAxlePosition").value);
+      if (!Number.isFinite(testFrontX)) {
+        testFrontX = 44;
+      }
+      testFrontX = Math.max(0, Math.min(60, testFrontX));
       setTestVehicle(testFrontX);
-      document.querySelector("#pauseButton").disabled = false;
+      document.querySelector("#pauseButton").disabled = true;
       document.querySelector("#pauseButton").textContent = "Pause";
-      hint.textContent = "Vehicle is driving across the bridge.";
-
-      driveTimer = window.setInterval(() => {
-        if (drivePaused) {
-          return;
-        }
-
-        const crossingVehicle = VEHICLE_VISUAL[document.querySelector("#vehicleSelect").value];
-        const rearAxleOffset = crossingVehicle.offsets[crossingVehicle.offsets.length - 1];
-        const finalFrontPosition = 60 - rearAxleOffset;
-        testFrontX = Math.min(finalFrontPosition, testFrontX + 0.5);
-        setTestVehicle(testFrontX);
-        const result = solveTruss(testFrontX);
-        if (!result.stable) {
-          stopDrive();
-          renderSolverResult(result);
-          hint.textContent = result.message;
-          return;
-        }
-
-        renderSolverResult(result);
+      const result = solveTruss(testFrontX);
+      renderSolverResult(result);
+      if (result.stable) {
         applyMemberColors(result.memberForces);
-
-        const failedMemberIndex = result.memberForces.findIndex((force) => {
-          const capacity = force >= 0 ? 90000 : 75000;
-          return Math.abs(force) / capacity > 1;
-        });
-
-        if (failedMemberIndex >= 0) {
-          const failedLine = result.lines[failedMemberIndex];
-          if (failedLine) {
-            failedLine.setAttribute("stroke", "#111");
-          }
-          showFailure(failedMemberIndex);
-          return;
-        }
-
-        const rearAxlePosition = testFrontX + rearAxleOffset;
-        if (rearAxlePosition >= 60) {
-          showSuccess(document.querySelector("#vehicleSelect").value);
-        }
-      }, 120);
+        hint.textContent = `Vehicle remains parked at front axle x = ${testFrontX} ft.`;
+      } else {
+        hint.textContent = result.message;
+      }
     });
 
     document.querySelector("#restartButton").addEventListener("click", () => {
