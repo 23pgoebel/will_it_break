@@ -115,3 +115,7 @@
 - **Request:** Make the car, dump truck, semi, and fire engine resemble the attached reference images.
 - **Changes:** Updated the inline SVG artwork for a yellow checked taxi, yellow dump truck with raised dirt bed, blue tractor-trailer, and red ladder fire engine.
 - **Worked:** Yes. Browser verification confirmed all four vehicle selections render and the page has no JavaScript errors.
+
+- **Request:** Show yellow-to-red for compression and green-to-blue for tension, including tension on deck members.
+- **Changes:** Updated member capacity colors for structural and deck members, with black retained for exceeded capacity.
+- **Worked:** Yes. Browser verification confirmed deck compression and structural tension/compression colors, and the diff passes whitespace checks.

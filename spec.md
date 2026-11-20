@@ -63,6 +63,7 @@
 - Build tools use consistent icons paired with text labels or tooltips. The cursor and selected tool visibly indicate placement, member connection, erasing, or joint dragging.
 - Normal joints appear as small white circles with black outlines. Fixed supports have distinct pin and roller markers. Hovered or selected joints use a clearly visible highlight.
 - Members look like brown wood when they have a safety factor of at least 2. They transition from yellow through bright red as they approach their applicable tension or compression capacity. A member turns black after it exceeds capacity.
+- Compression members use a yellow-to-red capacity scale. Tension members use a green-to-blue capacity scale. The deck uses the same tension/compression colors as structural members.
 - The 2D side-view vehicles show two wheels and use scaled dimensions and proportional axle spacing when possible.
 - Vehicle motion is smooth and readable. Test mode provides visible Pause/Resume and Park controls.
 - Success and failure states use clear banners or dialogs with restrained animation. Failure includes "Your Bridge Failed", the failed member, and a Restart button that returns to Build mode while preserving the bridge.
