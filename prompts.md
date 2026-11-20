@@ -79,3 +79,11 @@
 - **Request:** Complete rear-axle crossing, add Build Undo, and make each vehicle visually recognizable.
 - **Changes:** Added rear-axle crossing completion, undo snapshots for bridge edits, and distinct SVG shapes for a car, loaded dump truck, semi tractor-trailer, and fire engine.
 - **Worked:** Yes. The served page contains rear-axle completion, Undo, and vehicle-specific SVG rendering; the diff passes whitespace validation.
+
+- **Request:** Make the prebuilt opening bridge match the Pratt truss in the validation section.
+- **Changes:** Replaced the starter truss members and upper joints with a 60 ft, 10 ft Pratt truss: six deck panels, a four-member top chord, five vertical members, and six diagonal members.
+- **Worked:** Yes. The Pratt truss opening geometry was added.
+
+- **Request:** Change the diagonal member directions.
+- **Changes:** Reversed all six diagonal web members so their slopes are corrected.
+- **Worked:** Yes. The corrected diagonal directions are served and the diff passes whitespace checks.
